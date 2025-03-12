@@ -1,39 +1,31 @@
-🔐 BERTGuardian
+# 🔐 **BERTGuardian**
 
-BERTGuardian is an advanced AI-powered phishing detection system that leverages state-of-the-art transformer models (DistilBERT) and Natural Language Processing (NLP) techniques to identify and prevent phishing attacks in real-time. It analyzes web pages, emails, and online content instantly, highlighting suspicious linguistic patterns, URL anomalies, and structural indicators of phishing.
+**BERTGuardian** is an advanced AI-powered phishing detection system that leverages state-of-the-art transformer models (DistilBERT) and Natural Language Processing (NLP) techniques to identify and prevent phishing attacks in real-time. It analyzes web pages, emails, and online content instantly, highlighting suspicious linguistic patterns, URL anomalies, and structural indicators of phishing.
 
-✨ Features
+---
 
-Real-time Detection: Instant analysis of URLs, emails, and website content.
+## ✨ **Features**
 
-Transformer-Based Analysis: Utilizes DistilBERT for high-accuracy detection.
+- **Real-time Detection**: Instant analysis of URLs, emails, and website content.
+- **Transformer-Based Analysis:** Utilizes DistilBERT for high-accuracy detection.
+- **Interactive Interface:** User-friendly web UI and browser extension support.
+- **Detailed Explanations:** Clearly highlights why content is flagged.
+- **Open Source:** Transparent and privacy-friendly implementation.
 
-Interactive Interface: User-friendly web UI and browser extension support.
+## 🛠 **Tech Stack**
+- **Languages:** Python, JavaScript, HTML/CSS
+- **Frameworks & Tools:** TensorFlow, Hugging Face Transformers, Flask/FastAPI
+- **Hosting:** GitHub Pages, optional deployment via Docker & Cloud platforms
 
-Detailed Explanations: Clearly highlights why content is flagged.
+## 🚀 **How It Works**
+1. **Input Analysis:** Users input URLs, emails, or text content.
+2. **Text Processing:** Content is tokenized, preprocessed, and vectorized.
+3. **DistilBERT Prediction:** Transformer model evaluates the likelihood of phishing.
+4. **Risk Assessment:** Outputs a detailed score and visual indicators.
 
-Open Source: Transparent and privacy-friendly implementation.
+## ⚙️ **Installation and Usage**
 
-🛠 Tech Stack
-
-Languages: Python, JavaScript, HTML/CSS
-
-Frameworks & Tools: TensorFlow, Hugging Face Transformers, Flask/FastAPI
-
-Hosting: GitHub Pages, optional deployment via Docker & Cloud platforms
-
-🚀 How It Works
-
-Input Analysis: Users input URLs, emails, or text content.
-
-Text Processing: Content is tokenized, preprocessed, and vectorized.
-
-DistilBERT Prediction: Transformer model evaluates the likelihood of phishing.
-
-Risk Assessment: Outputs a detailed score and visual indicators.
-
-⚙️ Installation and Usage
-
+```bash
 # Clone Repository
 git clone https://github.com/username/BERTGuardian.git
 
@@ -45,36 +37,34 @@ pip install -r requirements.txt
 
 # Run the backend API
 python app.py
+```
 
-Access the web interface at http://localhost:5000
+Access the web interface at `http://localhost:5000`
 
-📚 Technologies Used
+---
 
-Python
+## 📚 **Technologies Used**
+- Python
+- TensorFlow
+- Hugging Face Transformers (DistilBERT)
+- Flask (backend API)
+- HTML/CSS/JavaScript (Frontend)
 
-TensorFlow
+---
 
-Hugging Face Transformers (DistilBERT)
+## 📈 **Future Enhancements**
+- Multi-language phishing detection
+- Expanded visualization dashboards
+- Automated email scanning integration
+- Continuous model retraining pipeline
 
-Flask (backend API)
+---
 
-HTML/CSS/JavaScript (Frontend)
+## 🛠 **Contributing**
+Contributions are welcome! Please open an issue or submit a pull request to help improve **BERTGuardian**.
 
-📈 Future Enhancements
+---
 
-Multi-language phishing detection
-
-Expanded visualization dashboards
-
-Automated email scanning integration
-
-Continuous model retraining pipeline
-
-🛠 Contributing
-
-Contributions are welcome! Please open an issue or submit a pull request to help improve BERTGuardian.
-
-📃 License
-
+## 📃 **License**
 This project is licensed under the MIT License.
 
