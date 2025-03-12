@@ -1,6 +1,6 @@
-# 🔐 **BERTGuardian**
+# 🔐 **PhishSpotter**
 
-**BERTGuardian** is an advanced AI-powered phishing detection system that leverages state-of-the-art transformer models (DistilBERT) and Natural Language Processing (NLP) techniques to identify and prevent phishing attacks in real-time. It analyzes web pages, emails, and online content instantly, highlighting suspicious linguistic patterns, URL anomalies, and structural indicators of phishing.
+**PhishSpotter** is an advanced AI-powered phishing detection system that leverages state-of-the-art transformer models (DistilBERT) and Natural Language Processing (NLP) techniques to identify and prevent phishing attacks in real-time. It analyzes web pages, emails, and online content instantly, highlighting suspicious linguistic patterns, URL anomalies, and structural indicators of phishing.
 
 ---
 
@@ -61,7 +61,7 @@ Access the web interface at `http://localhost:5000`
 ---
 
 ## 🛠 **Contributing**
-Contributions are welcome! Please open an issue or submit a pull request to help improve **BERTGuardian**.
+Contributions are welcome! Please open an issue or submit a pull request to help improve **PhishSpotter**.
 
 ---
 
