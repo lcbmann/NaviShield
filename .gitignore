@@ -1,0 +1,6 @@
+venv/
+distilbert_phishing_detector/
+__pycache__/
+*.pyc
+*.pkl
+.cache/
