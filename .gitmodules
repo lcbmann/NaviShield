@@ -1,0 +1,3 @@
+[submodule "Securebert-website-phishing-prediction"]
+	path = Securebert-website-phishing-prediction
+	url = https://huggingface.co/AventIQ-AI/Securebert-website-phishing-prediction
