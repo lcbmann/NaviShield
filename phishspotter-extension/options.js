@@ -22,6 +22,9 @@ function saveOptions(e) {
     });
   }
   
-  document.addEventListener('DOMContentLoaded', restoreOptions);
-  document.getElementById('optionsForm').addEventListener('submit', saveOptions);
+  // Properly add event listeners when DOM is fully loaded
+  document.addEventListener('DOMContentLoaded', function () {
+    restoreOptions();
+    document.getElementById('optionsForm').addEventListener('submit', saveOptions);
+  });
   
