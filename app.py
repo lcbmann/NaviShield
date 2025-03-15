@@ -48,9 +48,6 @@ def safe_browsing_check(url):
     """
     Calls the Google Safe Browsing API (v4) to check if the URL is
     potentially unsafe. Returns a tuple: (is_safe, result_data)
-    
-    - is_safe: True if URL is considered safe, False if unsafe.
-    - result_data: The API response (or error information).
     """
     sb_url = f"https://safebrowsing.googleapis.com/v4/threatMatches:find?key={SAFE_BROWSING_API_KEY}"
     payload = {
@@ -80,7 +77,7 @@ def safe_browsing_check(url):
          else:
              return True, {}
     except Exception as e:
-         # In case of an error (e.g., network issue), we assume the URL is safe.
+         # In case of an error, assume the URL is safe.
          return True, {"error": str(e)}
 
 # -------------------------------
@@ -178,9 +175,14 @@ def predict():
 
         # Get the prediction with the highest confidence score
         best_prediction = max(predictions, key=lambda x: x["score"])
-        label = best_prediction["label"]
         confidence = best_prediction["score"]
-        human_label = label_map.get(label.lower(), label)
+        # Define a threshold below which we consider the prediction uncertain.
+        CONFIDENCE_THRESHOLD = 0.80
+        if confidence < CONFIDENCE_THRESHOLD:
+            human_label = "Uncertain"
+        else:
+            label = best_prediction["label"]
+            human_label = label_map.get(label.lower(), label)
 
         return jsonify({
             "original_url": original_url,

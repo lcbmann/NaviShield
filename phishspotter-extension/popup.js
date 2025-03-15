@@ -33,9 +33,17 @@ document.getElementById('checkButton').addEventListener('click', async function 
 
     const data = await response.json();
 
-    // Update UI with result
-    resultLabel.textContent = data.prediction === "Phishing" ? "🚨 Phishing 🚨" : "✅ Safe";
-    resultLabel.style.color = data.prediction === "Phishing" ? "red" : "green";
+    // Update UI with result based on prediction
+    if (data.prediction === "Phishing") {
+      resultLabel.textContent = "🚨 Phishing 🚨";
+      resultLabel.style.color = "red";
+    } else if (data.prediction === "Uncertain") {
+      resultLabel.textContent = "❓ Uncertain ❓";
+      resultLabel.style.color = "orange";
+    } else {
+      resultLabel.textContent = "✅ Safe";
+      resultLabel.style.color = "green";
+    }
     resultConfidence.textContent = (data.confidence * 100).toFixed(2) + "% confidence";
 
     resultBox.classList.remove('hidden');
