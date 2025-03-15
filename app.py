@@ -5,16 +5,24 @@ import os
 app = Flask(__name__)
 
 # Hugging Face API Setup
-HF_API_URL = "https://api-inference.huggingface.co/models/ealvaradob/bert-finetuned-phishing"
-HF_API_TOKEN = "REMOVED"  # Replace with your actual key or better use env var in prod
+HF_API_URL = "https://api-inference.huggingface.co/models/r3ddkahili/final-complete-malicious-url-model"
+HF_API_TOKEN = os.environ.get("HF_API_TOKEN", "REMOVED")  # Or embed directly
 
 headers = {
     "Authorization": f"Bearer {HF_API_TOKEN}"
 }
 
+# Labels Mapping
+label_map = {
+    0: "Benign",
+    1: "Defacement",
+    2: "Phishing",
+    3: "Malware"
+}
+
 @app.route('/', methods=['GET'])
 def home():
-    return "✅ PhishSpotter API (Powered by Hugging Face ealvaradob/bert-finetuned-phishing) is running!"
+    return "✅ PhishSpotter API using r3ddkahili's model is running!"
 
 @app.route('/test', methods=['GET'])
 def test_page():
@@ -23,11 +31,11 @@ def test_page():
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>PhishSpotter API</title>
+  <title>PhishSpotter v2</title>
 </head>
 <body>
-  <h1>🔒 PhishSpotter URL Classifier (via Hugging Face API)</h1>
-  <p>Enter a URL to check if it's Safe or Phishing:</p>
+  <h1>🔒 PhishSpotter (Multi-Class URL Classifier)</h1>
+  <p>Enter a URL to check if it's Benign, Phishing, Malware, or Defacement:</p>
   <input type="text" id="urlInput" size="50" placeholder="https://example.com" />
   <button onclick="submitUrl()">Check URL</button>
   <pre id="output" style="background: #eee; padding: 10px; margin-top: 10px;"></pre>
@@ -75,30 +83,31 @@ def predict():
     payload = {"inputs": url}
 
     try:
-        # Call Hugging Face Inference API
+        # Call Hugging Face API
         response = requests.post(HF_API_URL, headers=headers, json=payload)
-        response.raise_for_status()  # Raises HTTPError for bad status codes
-
-        # Interpret response
+        response.raise_for_status()
         prediction_data = response.json()
-        print("Raw HF response:", prediction_data)  # <---- LOGGING
+        print("Raw HF response:", prediction_data)  # Log the raw output
 
-        # Hugging Face usually returns [{'label': 'LABEL_1', 'score': 0.98}]
-        predicted_label = prediction_data[0]['label']
-        confidence = prediction_data[0]['score']
+        # Example response: [{'label': 'LABEL_2', 'score': 0.92}, ...]
+        best_prediction = max(prediction_data, key=lambda x: x['score'])
+        label = best_prediction['label']
+        confidence = best_prediction['score']
 
-        label = "Phishing" if predicted_label == "LABEL_1" else "Safe"
+        # Convert 'LABEL_2' to number
+        label_number = int(label.split("_")[1])
+        human_readable_label = label_map.get(label_number, "Unknown")
 
         return jsonify({
             "url": url,
-            "prediction": label,
+            "prediction": human_readable_label,
             "confidence": confidence
         })
 
     except Exception as e:
-        print("Error occurred:", str(e))  # <---- LOGGING ERROR
+        print("Error occurred:", str(e))  # Log the error
         return jsonify({"error": "Failed to get prediction", "details": str(e)}), 500
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))  # For Render dynamic ports
+    port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
