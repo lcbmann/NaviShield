@@ -4,26 +4,29 @@ import os
 
 app = Flask(__name__)
 
-# Hugging Face API Setup
+# Hugging Face API settings
 HF_API_URL = "https://api-inference.huggingface.co/models/r3ddkahili/final-complete-malicious-url-model"
-HF_API_TOKEN = os.environ.get("HF_API_TOKEN", "REMOVED")  # Or embed directly
+HF_API_TOKEN = os.environ.get("HF_API_TOKEN", "REMOVED")  # Replace with secret if needed
 
 headers = {
-    "Authorization": f"Bearer {HF_API_TOKEN}"
+    "Authorization": f"Bearer {HF_API_TOKEN}",
+    "Content-Type": "application/json"
 }
 
-# Labels Mapping
+# Label map to human-readable
 label_map = {
-    0: "Benign",
-    1: "Defacement",
-    2: "Phishing",
-    3: "Malware"
+    "LABEL_0": "Benign",
+    "LABEL_1": "Defacement",
+    "LABEL_2": "Phishing",
+    "LABEL_3": "Malware"
 }
 
+# Home route for testing
 @app.route('/', methods=['GET'])
 def home():
-    return "✅ PhishSpotter API using r3ddkahili's model is running!"
+    return "✅ PhishSpotter API using r3ddkahili's model is live!"
 
+# Simple HTML test page
 @app.route('/test', methods=['GET'])
 def test_page():
     return """
@@ -73,6 +76,7 @@ def test_page():
 </html>
 """
 
+# Main prediction route
 @app.route('/predict', methods=['POST'])
 def predict():
     data = request.json
@@ -83,24 +87,18 @@ def predict():
     payload = {"inputs": url}
 
     try:
-        # Call Hugging Face API
+        # Send URL to Hugging Face Inference API
         response = requests.post(HF_API_URL, headers=headers, json=payload)
         response.raise_for_status()
         prediction_data = response.json()
-        print("Raw HF response:", prediction_data)  # Log the raw output for debugging
+        print("Raw HF API Response:", prediction_data)  # Debugging
 
-        # Pick highest scored prediction
+        # Correctly access list and pick best score
         best_prediction = max(prediction_data, key=lambda x: x['score'])
-        label = best_prediction['label']  # e.g., 'LABEL_0'
+        label = best_prediction['label']  # Like "LABEL_0"
         confidence = best_prediction['score']
 
-        # Map to human readable
-        label_map = {
-            "LABEL_0": "Benign",
-            "LABEL_1": "Defacement",
-            "LABEL_2": "Phishing",
-            "LABEL_3": "Malware"
-        }
+        # Map label to human-readable
         human_label = label_map.get(label, "Unknown")
 
         return jsonify({
@@ -110,9 +108,9 @@ def predict():
         })
 
     except Exception as e:
-        print("Error occurred:", str(e))  # Log for Render logs
+        print("Error occurred:", str(e))  # Log error for Render
         return jsonify({"error": "Failed to get prediction", "details": str(e)}), 500
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
+    port = int(os.environ.get('PORT', 5000))  # Render uses dynamic PORT
     app.run(host='0.0.0.0', port=port)
