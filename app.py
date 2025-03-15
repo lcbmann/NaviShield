@@ -175,14 +175,15 @@ def predict():
 
         # Get the prediction with the highest confidence score
         best_prediction = max(predictions, key=lambda x: x["score"])
+        label = best_prediction["label"]
         confidence = best_prediction["score"]
-        # Define a threshold below which we consider the prediction uncertain.
-        CONFIDENCE_THRESHOLD = 0.80
-        if confidence < CONFIDENCE_THRESHOLD:
+
+        # Map the model's label to a human-friendly label
+        human_label = label_map.get(label.lower(), label)
+        
+        # If Safe Browsing passed but the model predicts "Phishing", override with "Uncertain"
+        if human_label.lower() == "phishing":
             human_label = "Uncertain"
-        else:
-            label = best_prediction["label"]
-            human_label = label_map.get(label.lower(), label)
 
         return jsonify({
             "original_url": original_url,
