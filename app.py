@@ -87,25 +87,30 @@ def predict():
         response = requests.post(HF_API_URL, headers=headers, json=payload)
         response.raise_for_status()
         prediction_data = response.json()
-        print("Raw HF response:", prediction_data)  # Log the raw output
+        print("Raw HF response:", prediction_data)  # Log the raw output for debugging
 
-        # Example response: [{'label': 'LABEL_2', 'score': 0.92}, ...]
+        # Pick highest scored prediction
         best_prediction = max(prediction_data, key=lambda x: x['score'])
-        label = best_prediction['label']
+        label = best_prediction['label']  # e.g., 'LABEL_0'
         confidence = best_prediction['score']
 
-        # Convert 'LABEL_2' to number
-        label_number = int(label.split("_")[1])
-        human_readable_label = label_map.get(label_number, "Unknown")
+        # Map to human readable
+        label_map = {
+            "LABEL_0": "Benign",
+            "LABEL_1": "Defacement",
+            "LABEL_2": "Phishing",
+            "LABEL_3": "Malware"
+        }
+        human_label = label_map.get(label, "Unknown")
 
         return jsonify({
             "url": url,
-            "prediction": human_readable_label,
+            "prediction": human_label,
             "confidence": confidence
         })
 
     except Exception as e:
-        print("Error occurred:", str(e))  # Log the error
+        print("Error occurred:", str(e))  # Log for Render logs
         return jsonify({"error": "Failed to get prediction", "details": str(e)}), 500
 
 if __name__ == '__main__':
