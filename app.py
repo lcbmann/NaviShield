@@ -87,20 +87,20 @@ def predict():
     payload = {"inputs": url}
 
     try:
-        # Send URL to Hugging Face Inference API
         response = requests.post(HF_API_URL, headers=headers, json=payload)
-        print("Raw response status code:", response.status_code)
-        print("Raw response text:", response.text)
         response.raise_for_status()
+
+        # The response is something like [[{"label":"LABEL_2","score":0.9979}, ...]]
         prediction_data = response.json()
-        print("Raw HF API Response:", prediction_data)  # Debugging
 
-        # Correctly access list and pick best score
-        best_prediction = max(prediction_data, key=lambda x: x['score'])
-        label = best_prediction['label']  # Like "LABEL_0"
-        confidence = best_prediction['score']
+        # Get the *inner* list
+        predictions = prediction_data[0]  # The model always returns a nested list
 
-        # Map label to human-readable
+        best_prediction = max(predictions, key=lambda x: x["score"])
+        label = best_prediction["label"]
+        confidence = best_prediction["score"]
+
+        # Convert label like 'LABEL_2' -> 'Phishing'
         human_label = label_map.get(label, "Unknown")
 
         return jsonify({
@@ -110,8 +110,8 @@ def predict():
         })
 
     except Exception as e:
-        print("Error occurred:", str(e))  # Log error for Render
         return jsonify({"error": "Failed to get prediction", "details": str(e)}), 500
+
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))  # Render uses dynamic PORT
