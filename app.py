@@ -32,16 +32,26 @@ label_map = {
 
 def normalize_url(url):
     """
-    Ensures the URL has 'https://' as the scheme and 'www.' as the prefix.
-    This helps standardize the URL before it is processed.
+    Normalizes a URL by ensuring:
+    - If the scheme is missing, it defaults to "https://".
+    - The provided scheme is preserved if present.
+    - "www." is added as a prefix to the hostname if not already present.
     """
-    parsed = urlparse(url, scheme='https')
+    # Parse the URL without assuming a scheme
+    parsed = urlparse(url)
+    scheme = parsed.scheme or "https"
+
+    # If there's no netloc, the URL might be missing a scheme
     if not parsed.netloc:
-        parsed = urlparse("https://" + url)
+        parsed = urlparse(f"{scheme}://{url}")
+
     netloc = parsed.netloc
+
+    # Add "www." if it's not already present
     if not netloc.startswith("www."):
         netloc = "www." + netloc
-    normalized = parsed._replace(scheme="https", netloc=netloc)
+
+    normalized = parsed._replace(scheme=scheme, netloc=netloc)
     return urlunparse(normalized)
 
 def safe_browsing_check(url):
