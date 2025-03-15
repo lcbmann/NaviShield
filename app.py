@@ -4,8 +4,8 @@ import os
 
 app = Flask(__name__)
 
-# Hugging Face API settings
-HF_API_URL = "https://api-inference.huggingface.co/models/r3ddkahili/final-complete-malicious-url-model"
+# Hugging Face API settings for the new model
+HF_API_URL = "https://api-inference.huggingface.co/models/ealvaradob/bert-finetuned-phishing"
 HF_API_TOKEN = os.environ.get("HF_API_TOKEN", "REMOVED")  # Replace with secret if needed
 
 headers = {
@@ -13,18 +13,16 @@ headers = {
     "Content-Type": "application/json"
 }
 
-# Label map to human-readable
+# Label map for the new model (assuming binary classification: benign vs phishing)
 label_map = {
-    "LABEL_0": "Benign",
-    "LABEL_1": "Defacement",
-    "LABEL_2": "Phishing",
-    "LABEL_3": "Malware"
+    "benign": "Benign",
+    "phishing": "Phishing"
 }
 
 # Home route for testing
 @app.route('/', methods=['GET'])
 def home():
-    return "✅ PhishSpotter API using r3ddkahili's model is live!"
+    return "✅ PhishSpotter API using ealvaradob's model is live!"
 
 # Simple HTML test page
 @app.route('/test', methods=['GET'])
@@ -37,8 +35,8 @@ def test_page():
   <title>PhishSpotter v2</title>
 </head>
 <body>
-  <h1>🔒 PhishSpotter (Multi-Class URL Classifier)</h1>
-  <p>Enter a URL to check if it's Benign, Phishing, Malware, or Defacement:</p>
+  <h1>🔒 PhishSpotter (Phishing Detector)</h1>
+  <p>Enter a URL to check if it's benign or phishing:</p>
   <input type="text" id="urlInput" size="50" placeholder="https://example.com" />
   <button onclick="submitUrl()">Check URL</button>
   <pre id="output" style="background: #eee; padding: 10px; margin-top: 10px;"></pre>
@@ -87,21 +85,24 @@ def predict():
     payload = {"inputs": url}
 
     try:
+        # Send URL to Hugging Face Inference API
         response = requests.post(HF_API_URL, headers=headers, json=payload)
         response.raise_for_status()
-
-        # The response is something like [[{"label":"LABEL_2","score":0.9979}, ...]]
         prediction_data = response.json()
 
-        # Get the *inner* list
-        predictions = prediction_data[0]  # The model always returns a nested list
+        # Some models return a nested list; check and adjust if necessary
+        if isinstance(prediction_data, list) and len(prediction_data) > 0 and isinstance(prediction_data[0], list):
+            predictions = prediction_data[0]
+        else:
+            predictions = prediction_data
 
+        # Get the prediction with the highest confidence score
         best_prediction = max(predictions, key=lambda x: x["score"])
         label = best_prediction["label"]
         confidence = best_prediction["score"]
 
-        # Convert label like 'LABEL_2' -> 'Phishing'
-        human_label = label_map.get(label, "Unknown")
+        # Map the model's label to a human-friendly label (ensuring lowercase for matching)
+        human_label = label_map.get(label.lower(), label)
 
         return jsonify({
             "url": url,
@@ -112,7 +113,6 @@ def predict():
     except Exception as e:
         return jsonify({"error": "Failed to get prediction", "details": str(e)}), 500
 
-
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))  # Render uses dynamic PORT
+    port = int(os.environ.get('PORT', 5000))  # Render uses a dynamic PORT
     app.run(host='0.0.0.0', port=port)
