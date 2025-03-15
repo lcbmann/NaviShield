@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>DistilBERT URL Classifier</title>
+</head>
+<body>
+  <h1>DistilBERT URL Classifier</h1>
+  <p>Enter a URL to check if it's benign (0) or malicious (1):</p>
+  <input type="text" id="urlInput" placeholder="https://example.com" />
+  <button onclick="submitUrl()">Check URL</button>
+
+  <pre id="output"></pre>
+
+  <script>
+    async function submitUrl() {
+      const urlText = document.getElementById('urlInput').value.trim();
+      if (!urlText) {
+        alert("Please enter a URL.");
+        return;
+      }
+
+      try {
+        const response = await fetch('http://127.0.0.1:5000/predict', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: urlText })
+        });
+
+        if (!response.ok) {
+          throw new Error(`Server error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        // data might look like: { url: "https://...", prediction: 0, confidence: 0.99 }
+        document.getElementById('output').textContent = JSON.stringify(data, null, 2);
+      } catch (error) {
+        document.getElementById('output').textContent = `Error: ${error}`;
+      }
+    }
+  </script>
+</body>
+</html>
