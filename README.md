@@ -1,5 +1,4 @@
 ---
-
 # 🔐 **PhishSpotter**
 
 **PhishSpotter** is an AI-powered phishing **URL detection system** combining **machine learning** and **Google Safe Browsing** to assess whether a URL is potentially malicious. Using a **BERT-based transformer model** trained on real phishing and benign URLs, alongside Google’s trusted security database, PhishSpotter offers a **double-layered check** to help users stay safe — all via a **simple web interface or browser extension**.
