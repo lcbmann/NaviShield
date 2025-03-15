@@ -74,26 +74,30 @@ def predict():
     url = data['url']
     payload = {"inputs": url}
 
-    # Call Hugging Face Inference API
-    response = requests.post(HF_API_URL, headers=headers, json=payload)
+    try:
+        # Call Hugging Face Inference API
+        response = requests.post(HF_API_URL, headers=headers, json=payload)
+        response.raise_for_status()  # Raises HTTPError for bad status codes
 
-    if response.status_code != 200:
-        return jsonify({"error": "Failed to get prediction", "details": response.json()}), 500
+        # Interpret response
+        prediction_data = response.json()
+        print("Raw HF response:", prediction_data)  # <---- LOGGING
 
-    # Interpret response
-    prediction_data = response.json()
-    # Hugging Face returns list like [{'label': 'LABEL_1', 'score': 0.98}]
-    predicted_label = prediction_data[0]['label']
-    confidence = prediction_data[0]['score']
+        # Hugging Face usually returns [{'label': 'LABEL_1', 'score': 0.98}]
+        predicted_label = prediction_data[0]['label']
+        confidence = prediction_data[0]['score']
 
-    # Map LABEL_0 / LABEL_1 to Safe/Phishing
-    label = "Phishing" if predicted_label == "LABEL_1" else "Safe"
+        label = "Phishing" if predicted_label == "LABEL_1" else "Safe"
 
-    return jsonify({
-        "url": url,
-        "prediction": label,
-        "confidence": confidence
-    })
+        return jsonify({
+            "url": url,
+            "prediction": label,
+            "confidence": confidence
+        })
+
+    except Exception as e:
+        print("Error occurred:", str(e))  # <---- LOGGING ERROR
+        return jsonify({"error": "Failed to get prediction", "details": str(e)}), 500
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))  # For Render dynamic ports
