@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 import requests
 import os
+from urllib.parse import urlparse, urlunparse
 
 app = Flask(__name__)
 
@@ -18,6 +19,23 @@ label_map = {
     "benign": "Benign",
     "phishing": "Phishing"
 }
+
+def normalize_url(url):
+    """
+    Ensures the URL has 'https://' as the scheme and 'www.' as the prefix.
+    """
+    # Parse the URL; if scheme is missing, assume https
+    parsed = urlparse(url, scheme='https')
+    # If no netloc, the URL might be provided without a scheme (e.g. "google.com")
+    if not parsed.netloc:
+        parsed = urlparse("https://" + url)
+    netloc = parsed.netloc
+    # Add "www." if it's missing
+    if not netloc.startswith("www."):
+        netloc = "www." + netloc
+    # Rebuild the URL with https and the updated netloc
+    normalized = parsed._replace(scheme="https", netloc=netloc)
+    return urlunparse(normalized)
 
 # Home route for testing
 @app.route('/', methods=['GET'])
@@ -48,21 +66,17 @@ def test_page():
         alert("Please enter a URL.");
         return;
       }
-
       const outputEl = document.getElementById('output');
       outputEl.textContent = "Checking URL...";
-
       try {
         const response = await fetch('/predict', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({ url: urlText })
         });
-
         if (!response.ok) {
           throw new Error('Server error: ' + response.status);
         }
-
         const data = await response.json();
         outputEl.textContent = "Result: " + JSON.stringify(data, null, 2);
       } catch (error) {
@@ -81,8 +95,10 @@ def predict():
     if not data or 'url' not in data:
         return jsonify({"error": "No URL provided"}), 400
 
-    url = data['url']
-    payload = {"inputs": url}
+    original_url = data['url']
+    # Normalize URL: add https:// and www. if missing
+    normalized_url = normalize_url(original_url)
+    payload = {"inputs": normalized_url}
 
     try:
         # Send URL to Hugging Face Inference API
@@ -105,7 +121,8 @@ def predict():
         human_label = label_map.get(label.lower(), label)
 
         return jsonify({
-            "url": url,
+            "original_url": original_url,
+            "normalized_url": normalized_url,
             "prediction": human_label,
             "confidence": confidence
         })
