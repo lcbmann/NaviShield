@@ -1,6 +1,6 @@
 # 🔐 **PhishSpotter**
 
-**PhishSpotter** is an advanced AI-powered phishing detection system that leverages state-of-the-art transformer models (DistilBERT) and Natural Language Processing (NLP) techniques to identify and prevent phishing attacks in real-time. It analyzes web pages, emails, and online content instantly, highlighting suspicious linguistic patterns, URL anomalies, and structural indicators of phishing.
+**PhishSpotter** is an advanced AI-powered phishing detection system that leverages state-of-the-art transformer models (DistilBERT) and Natural Language Processing (NLP) techniques to identify and prevent phishing attacks in real-time. It analyzes web pages, emails, and online content instantly, highlighting suspicious linguistic patterns, URL anomalies, and structural indicators of phishing. The transformer model has been custom-trained on large publicly available datasets on common phishing URLs and messages.
 
 ---
 
