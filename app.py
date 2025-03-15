@@ -89,6 +89,8 @@ def predict():
     try:
         # Send URL to Hugging Face Inference API
         response = requests.post(HF_API_URL, headers=headers, json=payload)
+        print("Raw response status code:", response.status_code)
+        print("Raw response text:", response.text)
         response.raise_for_status()
         prediction_data = response.json()
         print("Raw HF API Response:", prediction_data)  # Debugging
