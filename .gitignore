@@ -1,7 +1,5 @@
 venv/
-distilbert_phishing_detector/
+data/
+phishspotter-extension/
 __pycache__/
 *.pyc
-*.pkl
-.cache/
-phishspotter-extension/

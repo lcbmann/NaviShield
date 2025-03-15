@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: phishspotter-api
+    env: python
+    buildCommand: ""
+    startCommand: gunicorn app:app --threads 4 --worker-class gthread --timeout 0
+    autoDeploy: true
