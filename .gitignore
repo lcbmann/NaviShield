@@ -2,4 +2,5 @@ venv/
 data/
 __pycache__/
 *.pyc
-.env .env
+.env
+bfg-1.13.2.jar

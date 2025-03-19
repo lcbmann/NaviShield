@@ -9,19 +9,36 @@
   <div class="container">
     <h1>About PhishSpotter</h1>
     <p>
-      PhishSpotter uses a combination of AI-based phishing detection 
-      and Google Safe Browsing to help you determine if a URL is safe.
+      PhishSpotter uses a combination of AI-based phishing detection, 
+      Google Safe Browsing checks, and WHOIS domain registration data 
+      to help you determine if a URL might be malicious.
     </p>
+
     <h2>How It Works:</h2>
     <ol>
-      <li><strong>URL Normalization:</strong> The URL is standardized.</li>
-      <li><strong>Safe Browsing Check:</strong> Checked against Google’s Safe Browsing API.</li>
-      <li><strong>AI Analysis:</strong> If not flagged, the URL is analyzed by our model.</li>
-      <li><strong>Final Result:</strong> We combine both checks to label the URL “Safe,” “Phishing,” or “Uncertain.”</li>
+      <li><strong>URL Normalization:</strong>  
+        We ensure the URL is properly parsed and uses a valid scheme (HTTP/HTTPS).
+      </li>
+      <li><strong>Safe Browsing Check:</strong>  
+        The URL is checked against Google’s Safe Browsing API, which flags known malicious sites.
+      </li>
+      <li><strong>AI Analysis:</strong>  
+        If the URL isn’t already flagged, it's analyzed by an AI model trained to detect phishing patterns.
+      </li>
+      <li><strong>WHOIS Lookups:</strong>  
+        We fetch domain registration data (e.g., creation date, registrar details, domain age). 
+        A brand-new or private-registered domain can be suspicious in some contexts.
+      </li>
+      <li><strong>Final Scoring & Result:</strong>  
+        We combine all checks (Safe Browsing, AI model prediction, WHOIS info) to produce a “Safe,” 
+        “Phishing,” or “Uncertain” label. The domain’s WHOIS data can help identify unusually new or 
+        hidden registrations, raising the suspicion score.
+      </li>
     </ol>
+
     <p>
-      For more information, visit our 
-      <a href="https://github.com/lcbmann/PhishSpotter/tree/main" target="_blank">GitHub</a>.
+      For more information or to see the source code, visit our 
+      <a href="https://github.com/lcbmann/PhishSpotter/tree/main" target="_blank">GitHub repository</a>.
     </p>
   </div>
 </body>
