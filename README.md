@@ -1,104 +1,101 @@
-# 🔐 **PhishSpotter**
 
-**PhishSpotter** is an AI-powered phishing **URL detection system** combining **machine learning** and **Google Safe Browsing** to assess whether a URL is potentially malicious. Using a **BERT-based transformer model** trained on real phishing and benign URLs, alongside Google’s trusted security database, PhishSpotter offers a **double-layered check** to help users stay safe — all via a **simple web interface or browser extension**.
 
-⚠️ **Note:** PhishSpotter currently focuses **only on URL classification** (e.g., Phishing, Benign). Advanced features like **full webpage scanning**, **email detection**, or **automated bulk checks** are **planned future developments**.
+# 🔐 **PhishSpotter: URL Risk Assessment Tool**
 
----
+PhishSpotter is a phishing detection system that evaluates URLs using **machine learning** and **Google Safe Browsing**. It combines a **BERT-based transformer model** trained on real phishing data with Google’s security database, providing a **layered approach** to identifying threats. The tool is available via a **web API** and **browser extension**.
 
-## ✨ **Key Features**
-
-- ✅ **Real-Time URL Detection**: Instantly check any URL for signs of phishing, malware, and other threats.
-- 🛡 **Google Safe Browsing Integration**: Leverages Google's security intelligence for known dangerous URLs.
-- 🤖 **Transformer-Based AI Model**: Uses a fine-tuned BERT model hosted on Hugging Face to analyze URL patterns.
-- 🌐 **Web Interface & Browser Extension**: User-friendly tools to analyze URLs on the fly.
-- 🔀 **Multi-Source Analysis**: Results combine **Google Safe Browsing verdict** and **AI model prediction** for higher accuracy.
-- 📊 **Clear Results with Confidence Scores**: Provides a transparent confidence level for AI assessments.
-- 💡 **Open Source & Extensible**: Full source code available for auditing, customization, and extension.
+> ⚠ **Note:** PhishSpotter focuses solely on URL classification (e.g., phishing, benign). Features like **full webpage scanning** and **email analysis** are planned for future updates.
 
 ---
 
-## 🛠 **Tech Stack**
-- **Languages:** Python, JavaScript, HTML/CSS
-- **Frameworks & Tools:** Flask, Hugging Face Transformers (BERT), Google Safe Browsing API, REST APIs
-- **Deployment:** Render.com (backend), Chrome Extension (frontend)
+## 🚀 **Features**
+
+- **Real-Time URL Analysis** – Instantly assess URLs for phishing indicators.
+- **Google Safe Browsing Integration** – Leverages Google’s security database to flag known malicious sites.
+- **AI-Powered Detection** – Uses a fine-tuned **BERT model** to analyze URL patterns and structure.
+- **Multi-Layered Risk Assessment** – Combines AI prediction, Safe Browsing status, and **WHOIS domain data** (age, registrar, private registration).
+- **Clear Confidence Scores** – Provides transparency in classification.
+- **Browser Extension & Web API** – Accessible for both individual users and developers.
 
 ---
 
-## 🚀 **How It Works**
+## 🛠 **Technology Stack**
 
-1. **User Input:** User submits a URL via the web app or browser extension.
-2. **Normalization & Pre-check:** The system formats the URL and checks it against **Google Safe Browsing** for known threats.
-3. **Machine Learning Analysis:** If Safe Browsing passes, the system runs a **BERT-based AI model** to detect suspicious URL patterns.
-4. **Dual-Layer Verdict:** Both Safe Browsing status and AI predictions are combined to provide a comprehensive risk assessment.
-5. **Result Display:** The final result with confidence scores and Safe Browsing details is shown to the user.
+- **Languages** – Python, JavaScript, HTML/CSS
+- **Frameworks & Tools** – Flask, Hugging Face Transformers (BERT), Google Safe Browsing API, WHOIS XML API
+- **Deployment** – Hosted on Render.com, Chrome Extension frontend
 
 ---
 
-## 📚 **Technologies Used**
-- Python
-- Flask (API backend)
-- Hugging Face Transformers (BERT-based model)
-- Google Safe Browsing API (v4)
-- HTML/CSS/JavaScript (frontend and extension)
+## 🔍 **How It Works**
+
+1. **Input & Normalization** – The user submits a URL, which is standardized.
+2. **Google Safe Browsing Check** – The system checks the URL against Google’s database of unsafe websites.
+3. **AI Model Analysis** – If Safe Browsing does not flag the URL, the system runs a **BERT-based AI model** to detect phishing patterns.
+4. **WHOIS Data Lookup** – Retrieves domain registration details, such as **age, registrar, and privacy settings**.
+5. **Final Risk Score** – The system calculates a **suspicion score** by combining all factors.
+6. **Result Display** – The user receives a classification: **Safe, Phishing, or Uncertain**, with supporting confidence scores.
 
 ---
 
-## ⚙️ **Project Structure**
+## 📁 **Project Structure**
 
 ```
 PhishSpotter/
-├── app.py                     # Flask backend with Safe Browsing & AI model logic
+├── app.py                     # Flask backend (Safe Browsing & AI model logic)
 ├── phishspotter-extension/    # Chrome Extension frontend
-├── requirements.txt           # Python backend dependencies
-└── README.md                  # This file
+├── requirements.txt           # Backend dependencies
+└── README.md                  # Project documentation
 ```
 
 ---
 
-## 🚀 **Example Output**
+## 📊 **Example API Output**
 
 ```json
 {
   "original_url": "http://example.com",
   "normalized_url": "https://www.example.com",
-  "prediction": "Benign",
+  "prediction": "Safe",
   "confidence": 0.92,
+  "suspicion_score": 1,
   "safe_browsing": {
     "status": "No threats detected"
+  },
+  "whois_info": {
+    "domain": "example.com",
+    "created_date": "2001-07-20T04:00:00Z",
+    "domain_age_days": 8000
   }
 }
 ```
 
 ---
 
-## 🎯 **Planned Future Enhancements**
-- 🕷 **Full page content analysis** (HTML/DOM structure inspection)
-- 📧 **Email phishing detection and analysis**
-- 🗂 **Bulk URL scanning automation** for security teams and researchers
-- 📊 **Interactive dashboards** for threat visualization and historical data
-- 🔁 **Continuous model retraining** with fresh phishing datasets for better accuracy
+## 🎯 **Upcoming Enhancements**
+- **Full Page Content Analysis** – Inspect HTML/DOM structures for hidden phishing elements.
+- **Email Phishing Detection** – Scan suspicious emails for fraud indicators.
+- **Bulk URL Scanning** – Automate security assessments for enterprises.
+- **Interactive Dashboards** – Provide historical threat insights.
+- **Continuous Model Training** – Improve accuracy with real-time phishing dataset updates.
 
 ---
 
 ## 🤝 **Contributing**
-
-Contributions are welcome!  
-If you have ideas, improvements, or want to help extend PhishSpotter, feel free to:
-- Open an issue
-- Submit a pull request
-- Discuss in the project’s issues tab
+Contributions are welcome! To contribute:
+- **Submit Issues** – Report bugs or suggest improvements.
+- **Fork & Pull Requests** – Help enhance the tool.
+- **Discussion** – Engage with the community via GitHub Issues.
 
 ---
 
-## 📄 **License**
+## 📜 **License**
+PhishSpotter is licensed under the **MIT License** – free to use, modify, and distribute.
 
-MIT License — free to use, modify, and distribute.
+---
+
+## ⚠ **Disclaimer**
+PhishSpotter assists in phishing detection but **cannot guarantee 100% accuracy**. Users should exercise caution and verify URLs independently when in doubt.
 
 ---
 
-## 🚨 **Disclaimer**
-
-PhishSpotter is a tool for educational and research purposes. No system is 100% accurate — **always exercise caution when interacting with suspicious URLs**, even if marked "benign."
-
----
