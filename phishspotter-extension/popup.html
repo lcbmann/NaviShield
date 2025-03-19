@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>PhishSpotter</title>
-  <!-- Use whatever CSS you want (popup.css or style.css) -->
+  <!-- Reference your shared CSS (popup.css or style.css) -->
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
@@ -14,9 +14,10 @@
   <button id="checkButton">Check URL</button>
   <button id="learnMoreButton">Learn More</button>
 
+  <!-- The result section only shows Final Label and Suspicion Score -->
   <div id="resultOutput" class="result-box hidden">
     <p><strong>Result:</strong> <span id="resultLabel"></span></p>
-    <p><strong>Confidence:</strong> <span id="resultConfidence"></span></p>
+    <p><strong>Suspicion Score:</strong> <span id="suspicionScore"></span></p>
     <button id="detailsButton" class="details-btn">More Details</button>
   </div>
 

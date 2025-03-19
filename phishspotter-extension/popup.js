@@ -1,4 +1,4 @@
-// Store the server’s response for the "More Details" page
+// We'll store the server’s response here for the "More Details" page
 let lastResultData = null;
 
 // "Check URL" button
@@ -6,13 +6,15 @@ document.getElementById('checkButton').addEventListener('click', async () => {
   const urlInput = document.getElementById('urlInput').value.trim();
   const resultBox = document.getElementById('resultOutput');
   const resultLabel = document.getElementById('resultLabel');
-  const resultConfidence = document.getElementById('resultConfidence');
+  const suspicionScoreEl = document.getElementById('suspicionScore');
   const errorBox = document.getElementById('errorOutput');
 
   // Clear previous results/messages
   resultBox.classList.add('hidden');
   errorBox.classList.add('hidden');
   errorBox.textContent = '';
+  suspicionScoreEl.textContent = '';
+  resultLabel.textContent = '';
 
   // If empty input, show an error
   if (!urlInput) {
@@ -41,31 +43,36 @@ document.getElementById('checkButton').addEventListener('click', async () => {
     // Save for "More Details" button
     lastResultData = data;
 
-    // Decide how to display the result
-    if (data.prediction === "Invalid URL") {
+    // If your server includes a "suspicion_score" field, read it
+    // Otherwise default to "N/A"
+    let suspicionVal = "N/A";
+    if (typeof data.suspicion_score === "number") {
+      suspicionVal = data.suspicion_score;
+    }
+
+    // Decide how to display the result label & color
+    const finalLabel = data.prediction || "Unknown";
+
+    if (finalLabel === "Invalid URL") {
       resultLabel.textContent = "⚠️ Invalid URL";
       resultLabel.style.color = "orange";
-      // Usually confidence is 0 for invalid
-      resultConfidence.textContent = (data.confidence * 100).toFixed(2) + "% confidence";
-    } else if (data.prediction === "Phishing") {
-      resultLabel.textContent = "🚨 Phishing 🚨";
+    } else if (finalLabel === "Phishing" || finalLabel === "Unsafe (Google Safe Browsing)") {
+      // If your server also uses "Unsafe (Google Safe Browsing)" as a final label
+      resultLabel.textContent = finalLabel === "Phishing" 
+        ? "🚨 Phishing 🚨" 
+        : "🚫 Unsafe (GSB) 🚫";
       resultLabel.style.color = "red";
-      resultConfidence.textContent = (data.confidence * 100).toFixed(2) + "% confidence";
-    } else if (data.prediction === "Uncertain") {
+    } else if (finalLabel === "Uncertain") {
       resultLabel.textContent = "❓ Uncertain ❓";
       resultLabel.style.color = "orange";
-      resultConfidence.textContent = (data.confidence * 100).toFixed(2) + "% confidence";
-    } else if (data.prediction === "Unsafe (Google Safe Browsing)") {
-      // In case your server returns this label
-      resultLabel.textContent = "🚫 Unsafe (GSB) 🚫";
-      resultLabel.style.color = "red";
-      resultConfidence.textContent = (data.confidence * 100).toFixed(2) + "% confidence";
     } else {
       // If not Invalid/Phishing/Uncertain/Unsafe => treat as "Safe"
       resultLabel.textContent = "✅ Safe";
       resultLabel.style.color = "green";
-      resultConfidence.textContent = (data.confidence * 100).toFixed(2) + "% confidence";
     }
+
+    // Show suspicion score in the UI
+    suspicionScoreEl.textContent = suspicionVal;
 
     // Show the result box, hide the error box
     resultBox.classList.remove('hidden');
