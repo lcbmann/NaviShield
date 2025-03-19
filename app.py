@@ -167,8 +167,12 @@ def domain_age_days(whois_data):
     if created_dt is None:
         return None
 
-    return (datetime.datetime.utcnow() - created_dt).days
+    # If 'created_dt' has a timezone, convert to UTC then remove tzinfo:
+    if created_dt.tzinfo is not None and created_dt.utcoffset() is not None:
+        created_dt = created_dt.astimezone(datetime.timezone.utc).replace(tzinfo=None)
 
+    # Now both are offset-naive (UTC). This won't raise an error:
+    return (datetime.datetime.utcnow() - created_dt).days
 
 def is_private_registration(whois_data):
     """
