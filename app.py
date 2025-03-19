@@ -225,7 +225,7 @@ def compute_suspicion_score(
         elif age < 365:
             score += 1  # Under 1 year => small suspicion
     else:
-        score += 1  # Unknown age => small suspicion
+        score += 3  # Unknown age => suspicious
     # B) Private Registration
     if is_private_registration(whois_data):
         score += 1
