@@ -139,22 +139,36 @@ def whois_lookup(url):
     except Exception as e:
         return {"error": f"Whois lookup failed: {str(e)}"}
 
+def parse_created_date(created_str):
+    """
+    Attempts to parse the date with different formats:
+    - e.g. 1997-09-15T07:00:00Z
+    - e.g. 1997-09-15T07:00:00+0000
+    Returns a datetime object or None if both fail.
+    """
+    for fmt in ["%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%dT%H:%M:%S%z"]:
+        try:
+            return datetime.datetime.strptime(created_str, fmt)
+        except:
+            pass
+    return None
+
 
 def domain_age_days(whois_data):
-    """
-    Return integer number of days since domain creation, or None if unknown.
-    """
     record = whois_data.get("WhoisRecord")
     if not record:
         return None
-    created_str = record.get("createdDate")  # e.g. "1997-06-18T04:00:00Z"
+
+    created_str = record.get("createdDate")  # e.g. "1997-09-15T07:00:00+0000"
     if not created_str:
         return None
-    try:
-        created_dt = datetime.datetime.strptime(created_str, "%Y-%m-%dT%H:%M:%SZ")
-        return (datetime.datetime.utcnow() - created_dt).days
-    except:
+
+    created_dt = parse_created_date(created_str)
+    if created_dt is None:
         return None
+
+    return (datetime.datetime.utcnow() - created_dt).days
+
 
 def is_private_registration(whois_data):
     """
