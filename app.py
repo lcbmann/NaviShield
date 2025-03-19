@@ -32,63 +32,89 @@ label_map = {
 
 def normalize_url(url):
     """
-    Normalizes a URL by ensuring:
-    - If the scheme is missing, it defaults to "https://".
-    - The provided scheme is preserved if present.
-    - "www." is added as a prefix to the hostname if not already present.
+    Attempt to parse and normalize the URL. Consider it invalid if:
+    - It's empty or all whitespace
+    - Its scheme is not http/https
+    - There's no valid netloc (hostname/domain)
     """
-    # Parse the URL without assuming a scheme
-    parsed = urlparse(url)
-    scheme = parsed.scheme or "https"
+    url = (url or "").strip()
+    if not url:
+        raise ValueError("Empty or missing URL")
 
-    # If there's no netloc, the URL might be missing a scheme
+    parsed = urlparse(url)
+
+    # If the user didn't provide a scheme, scheme might be ""
+    scheme = parsed.scheme.lower() or "https"
+
+    # Reject anything that's NOT http or https
+    if scheme not in ["http", "https"]:
+        raise ValueError("Unsupported scheme: " + scheme)
+
+    # If netloc is missing, try prepending the scheme
     if not parsed.netloc:
         parsed = urlparse(f"{scheme}://{url}")
 
-    netloc = parsed.netloc
+    if not parsed.netloc:
+        raise ValueError("Invalid URL netloc")
 
-    # Add "www." if it's not already present
+    netloc = parsed.netloc
+    # Optionally force "www." if you like that approach:
     if not netloc.startswith("www."):
         netloc = "www." + netloc
 
-    normalized = parsed._replace(scheme=scheme, netloc=netloc)
-    return urlunparse(normalized)
+    # Construct the normalized URL
+    return urlunparse(parsed._replace(scheme=scheme, netloc=netloc))
+
 
 def safe_browsing_check(url):
     """
-    Calls the Google Safe Browsing API (v4) to check if the URL is
-    potentially unsafe. Returns a tuple: (is_safe, result_data)
+    Calls the Google Safe Browsing API (v4) to check if the URL is potentially unsafe.
+    Returns a tuple: (is_safe, result_data)
+      - is_safe: bool (False if unsafe/invalid, True otherwise)
+      - result_data: dict with either "matches" or "error"
     """
     sb_url = f"https://safebrowsing.googleapis.com/v4/threatMatches:find?key={SAFE_BROWSING_API_KEY}"
     payload = {
-      "client": {
-          "clientId": "phishspotter",
-          "clientVersion": "1.0"
-      },
-      "threatInfo": {
-         "threatTypes": [
-             "MALWARE",
-             "SOCIAL_ENGINEERING",
-             "UNWANTED_SOFTWARE",
-             "POTENTIALLY_HARMFUL_APPLICATION"
-         ],
-         "platformTypes": ["ANY_PLATFORM"],
-         "threatEntryTypes": ["URL"],
-         "threatEntries": [{"url": url}]
-      }
+        "client": {
+            "clientId": "phishspotter",
+            "clientVersion": "1.0"
+        },
+        "threatInfo": {
+            "threatTypes": [
+                "MALWARE",
+                "SOCIAL_ENGINEERING",
+                "UNWANTED_SOFTWARE",
+                "POTENTIALLY_HARMFUL_APPLICATION"
+            ],
+            "platformTypes": ["ANY_PLATFORM"],
+            "threatEntryTypes": ["URL"],
+            "threatEntries": [{"url": url}]
+        }
     }
+
     try:
-         response = requests.post(sb_url, json=payload, timeout=5)
-         response.raise_for_status()
-         result = response.json()
-         # If there are matches, then Google considers the URL unsafe.
-         if "matches" in result:
-             return False, result
-         else:
-             return True, {}
+        response = requests.post(sb_url, json=payload, timeout=5)
+        response.raise_for_status()  # raises HTTPError on 4xx/5xx
+        result = response.json()
+        if "matches" in result:
+            # GSB found threats
+            return False, result
+        else:
+            # No matches => safe
+            return True, {}
+    except requests.exceptions.HTTPError as e:
+        # If it's a 400 error => GSB saw it as invalid request
+        if response.status_code == 400:
+            return False, {
+                "error": "Invalid URL",
+                "details": str(e)
+            }
+        else:
+            # For other HTTP errors, we treat it as "safe" but pass the error
+            return True, {"error": f"HTTPError: {e}"}
     except Exception as e:
-         # In case of an error, assume the URL is safe.
-         return True, {"error": str(e)}
+        # On network timeouts or other issues, treat as safe but note the error
+        return True, {"error": str(e)}
 
 # -------------------------------
 # Flask Routes
@@ -146,30 +172,61 @@ def test_page():
 
 @app.route('/predict', methods=['POST'])
 def predict():
+    """
+    Main prediction route:
+      1. Normalize URL. If invalid, return "Invalid URL" immediately.
+      2. Check Google Safe Browsing. If flagged or invalid, return.
+      3. Call Hugging Face API for classification.
+      4. Return final JSON result.
+    """
     data = request.json
     if not data or 'url' not in data:
         return jsonify({"error": "No URL provided"}), 400
 
     original_url = data['url']
-    # Normalize the URL to a standard format
-    normalized_url = normalize_url(original_url)
 
     # -------------------------------
-    # Step 1: Preliminary Safe Browsing Check
+    # Step 0: Normalize & Validate
     # -------------------------------
-    is_safe, sb_result = safe_browsing_check(normalized_url)
-    if not is_safe:
-        # If Google Safe Browsing flags the URL, return an "Unsafe" response.
+    try:
+        normalized_url = normalize_url(original_url)
+    except ValueError:
+        # If normalization fails => "Invalid URL"
         return jsonify({
             "original_url": original_url,
-            "normalized_url": normalized_url,
-            "prediction": "Unsafe (Google Safe Browsing)",
-            "confidence": 1.0,
-            "safe_browsing": sb_result
+            "normalized_url": "",
+            "prediction": "Invalid URL",
+            "confidence": 0.0,
+            "safe_browsing": {"error": "Malformed or invalid URL."}
         })
 
     # -------------------------------
-    # Step 2: Proceed with Hugging Face Inference
+    # Step 1: Google Safe Browsing
+    # -------------------------------
+    is_safe, sb_result = safe_browsing_check(normalized_url)
+
+    if not is_safe:
+        # If GSB sees a 400 => invalid
+        if sb_result.get("error") == "Invalid URL":
+            return jsonify({
+                "original_url": original_url,
+                "normalized_url": normalized_url,
+                "prediction": "Invalid URL",
+                "confidence": 0.0,
+                "safe_browsing": sb_result
+            })
+        else:
+            # Otherwise, GSB flagged it as unsafe
+            return jsonify({
+                "original_url": original_url,
+                "normalized_url": normalized_url,
+                "prediction": "Unsafe (Google Safe Browsing)",
+                "confidence": 1.0,
+                "safe_browsing": sb_result
+            })
+
+    # -------------------------------
+    # Step 2: Hugging Face Inference
     # -------------------------------
     payload = {"inputs": normalized_url}
     try:
@@ -177,21 +234,23 @@ def predict():
         response.raise_for_status()
         prediction_data = response.json()
 
-        # Handle possible nested list responses
-        if isinstance(prediction_data, list) and len(prediction_data) > 0 and isinstance(prediction_data[0], list):
+        # Some HF models return a nested list
+        if (isinstance(prediction_data, list)
+            and len(prediction_data) > 0
+            and isinstance(prediction_data[0], list)):
             predictions = prediction_data[0]
         else:
             predictions = prediction_data
 
-        # Get the prediction with the highest confidence score
+        # Take the highest-confidence prediction
         best_prediction = max(predictions, key=lambda x: x["score"])
         label = best_prediction["label"]
         confidence = best_prediction["score"]
 
-        # Map the model's label to a human-friendly label
+        # Convert model label to user-friendly label
         human_label = label_map.get(label.lower(), label)
-        
-        # If Safe Browsing passed but the model predicts "Phishing", override with "Uncertain"
+
+        # If the model says "Phishing" but GSB said safe => "Uncertain"
         if human_label.lower() == "phishing":
             human_label = "Uncertain"
 
@@ -202,11 +261,15 @@ def predict():
             "confidence": confidence,
             "safe_browsing": sb_result
         })
+
     except Exception as e:
-        return jsonify({"error": "Failed to get prediction", "details": str(e)}), 500
+        return jsonify({
+            "error": "Failed to get prediction",
+            "details": str(e)
+        }), 500
 
 # -------------------------------
-# Run the Flask app (Render will set the PORT environment variable)
+# Run the Flask app
 # -------------------------------
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))

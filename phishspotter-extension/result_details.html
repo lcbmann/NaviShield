@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>PhishSpotter - Detailed Report</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>PhishSpotter - Detailed Report</h1>
+
+    <div class="result-box">
+      <p><strong>Original URL:</strong> <span id="originalUrl"></span></p>
+      <p><strong>Normalized URL:</strong> <span id="normalizedUrl"></span></p>
+      <p><strong>Final Prediction:</strong> <span id="finalPrediction"></span></p>
+      <p><strong>AI Model Confidence:</strong> <span id="modelConfidence"></span></p>
+    </div>
+
+    <h2>Google Safe Browsing Result:</h2>
+    <pre id="safeBrowsingResult">Loading...</pre>
+
+    <h2>What Does This Mean?</h2>
+    <div id="explanation" class="explanation">Loading explanation...</div>
+  </div>
+
+  <script src="result_details.js"></script>
+</body>
+</html>

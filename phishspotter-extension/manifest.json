@@ -2,11 +2,10 @@
   "manifest_version": 3,
   "name": "PhishSpotter",
   "version": "1.0",
-  "description": "Quickly check if a URL is phishing or safe using AI-based detection.",
+  "description": "Quickly check if a URL is phishing or safe using AI-based detection and Google Safe Browsing.",
   "permissions": [
     "storage",
-    "activeTab",
-    "scripting"
+    "activeTab"
   ],
   "host_permissions": [
     "https://phishspotter.onrender.com/*"
@@ -27,5 +26,18 @@
       "48": "icon48.png",
       "128": "icon128.png"
     }
-  }
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "result_details.html",
+        "result_details.js",
+        "style.css",
+        "icon16.png",
+        "icon48.png",
+        "icon128.png"
+      ],
+      "matches": ["<all_urls>"]
+    }
+  ]
 }

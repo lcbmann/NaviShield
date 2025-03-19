@@ -3,10 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <title>PhishSpotter</title>
-  <link rel="stylesheet" href="style.css">
+  <!-- Use the original popup CSS -->
+  <link rel="stylesheet" href="popup.css">
 </head>
 <body>
   <h2>🛡️ PhishSpotter</h2>
+  
   <input type="text" id="urlInput" placeholder="Enter a URL like https://example.com">
   <button id="autofillButton">Autofill Current URL</button>
   <button id="checkButton">Check URL</button>
@@ -15,6 +17,7 @@
   <div id="resultOutput" class="result-box hidden">
     <p><strong>Result:</strong> <span id="resultLabel"></span></p>
     <p><strong>Confidence:</strong> <span id="resultConfidence"></span></p>
+    <button id="detailsButton" class="details-btn">More Details</button>
   </div>
 
   <div id="errorOutput" class="error-box hidden"></div>

@@ -1,0 +1,86 @@
+body {
+    font-family: Arial, sans-serif;
+    padding: 15px;
+    width: 320px;
+}
+
+h2 {
+    text-align: center;
+}
+
+/* Inputs & Buttons */
+input, button {
+    padding: 10px;
+    margin-top: 10px;
+    width: 100%;
+    box-sizing: border-box;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+button {
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+}
+button:hover {
+    background-color: #0056b3;
+}
+
+/* Boxes */
+.result-box, .error-box {
+    padding: 12px;
+    margin-top: 15px;
+    border-radius: 5px;
+    border: 1px solid;
+}
+.result-box {
+    background-color: #f9f9f9;
+    border-color: #ccc;
+    padding: 10px;
+    background-color: #f0f0f0;
+    border-radius: 8px;
+    margin-top: 10px;
+}
+.error-box {
+    background-color: #ffe5e5;
+    border-color: #ff6b6b;
+    color: red;
+    font-weight: bold;
+}
+
+/* Utility */
+.hidden {
+    display: none;
+}
+p {
+    margin: 5px 0;
+}
+
+/* “More Details” button styling */
+.details-btn {
+    margin-top: 10px;
+    padding: 5px 10px;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.details-btn:hover {
+    background-color: #0056b3;
+}
+
+/* Headings */
+h2 {
+    margin-top: 20px;
+}
+
+/* Preformatted text blocks */
+pre {
+    background: #eee;
+    padding: 10px;
+    border-radius: 5px;
+    overflow-x: auto;
+}

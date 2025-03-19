@@ -1,30 +1,5 @@
-// Save options to chrome.storage
-function saveOptions(e) {
-    e.preventDefault();
-    const threshold = document.getElementById('confidenceThreshold').value;
-    chrome.storage.sync.set({
-      confidenceThreshold: threshold
-    }, function() {
-      // Update status to let user know options were saved.
-      document.getElementById('status').textContent = 'Options saved.';
-      setTimeout(() => {
-        document.getElementById('status').textContent = '';
-      }, 1500);
-    });
-  }
-  
-  // Restore options from chrome.storage
-  function restoreOptions() {
-    chrome.storage.sync.get({
-      confidenceThreshold: '0.80'
-    }, function(items) {
-      document.getElementById('confidenceThreshold').value = items.confidenceThreshold;
-    });
-  }
-  
-  // Properly add event listeners when DOM is fully loaded
-  document.addEventListener('DOMContentLoaded', function () {
-    restoreOptions();
-    document.getElementById('optionsForm').addEventListener('submit', saveOptions);
-  });
-  
+// Currently, no options to configure, so we can remove all references to the threshold.
+document.addEventListener('DOMContentLoaded', function () {
+  // In the future, if you add new settings, you can handle them here.
+  console.log("No current options to configure.");
+});
