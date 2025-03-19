@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 import requests
 import os
 from urllib.parse import urlparse, urlunparse
+import datetime
 
 app = Flask(__name__)
 
@@ -9,51 +10,44 @@ app = Flask(__name__)
 # Configuration for external APIs
 # -------------------------------
 
-# Hugging Face API settings for the phishing model
+# Hugging Face
 HF_API_URL = "https://api-inference.huggingface.co/models/ealvaradob/bert-finetuned-phishing"
-HF_API_TOKEN = os.environ.get("HF_API_TOKEN", "REMOVED")  # Use secret in production
+HF_API_TOKEN = os.environ.get("HF_API_TOKEN", "REMOVED")
 headers = {
     "Authorization": f"Bearer {HF_API_TOKEN}",
     "Content-Type": "application/json"
 }
 
-# Google Safe Browsing API key (v4)
+# Google Safe Browsing
 SAFE_BROWSING_API_KEY = "REMOVED"
 
-# WhoisXML API key
-WHOIS_API_KEY = "REMOVED"  # <--- Your key
+# WhoisXML
+WHOIS_API_KEY = "REMOVED"
 
-# Label mapping for the Hugging Face model's output
+# HF model label mapping
 label_map = {
     "benign": "Benign",
     "phishing": "Phishing"
 }
 
 # -------------------------------
-# Helper functions
+# Helper Functions
 # -------------------------------
-
 def normalize_url(url):
     """
-    Attempt to parse and normalize the URL. Consider it invalid if:
-    - It's empty or all whitespace
-    - Its scheme is not http/https
-    - There's no valid netloc (hostname/domain)
+    Validate that URL is non-empty, has http/https scheme, and a valid netloc.
+    Returns normalized URL or raises ValueError.
     """
     url = (url or "").strip()
     if not url:
         raise ValueError("Empty or missing URL")
 
     parsed = urlparse(url)
-
-    # If the user didn't provide a scheme, scheme might be ""
     scheme = parsed.scheme.lower() or "https"
 
-    # Reject anything that's NOT http or https
     if scheme not in ["http", "https"]:
         raise ValueError("Unsupported scheme: " + scheme)
 
-    # If netloc is missing, try prepending the scheme
     if not parsed.netloc:
         parsed = urlparse(f"{scheme}://{url}")
 
@@ -68,8 +62,9 @@ def normalize_url(url):
 
 def safe_browsing_check(url):
     """
-    Calls the Google Safe Browsing API (v4) to check if the URL is potentially unsafe.
-    Returns (is_safe, result_data).
+    Calls Google Safe Browsing (GSB). Returns (is_safe, sb_result).
+    is_safe = False if flagged/invalid, True otherwise.
+    sb_result includes "matches" or "error".
     """
     sb_url = f"https://safebrowsing.googleapis.com/v4/threatMatches:find?key={SAFE_BROWSING_API_KEY}"
     payload = {
@@ -89,65 +84,96 @@ def safe_browsing_check(url):
             "threatEntries": [{"url": url}]
         }
     }
-
     try:
-        response = requests.post(sb_url, json=payload, timeout=5)
-        response.raise_for_status()
-        result = response.json()
+        resp = requests.post(sb_url, json=payload, timeout=5)
+        resp.raise_for_status()
+        result = resp.json()
         if "matches" in result:
             return False, result
-        else:
-            return True, {}
+        return True, {}
     except requests.exceptions.HTTPError as e:
-        if response.status_code == 400:
+        if resp.status_code == 400:
             return False, {"error": "Invalid URL", "details": str(e)}
-        else:
-            return True, {"error": f"HTTPError: {e}"}
+        return True, {"error": f"HTTPError: {e}"}
     except Exception as e:
-        # In other exceptions, assume safe but pass the error info
         return True, {"error": str(e)}
 
-def whois_lookup(normalized_url):
+def call_hf_model(url):
     """
-    Calls WhoisXML API to fetch WHOIS data about the domain in normalized_url.
-    Returns a dict with WHOIS JSON or an "error" field if it fails.
+    Call the Hugging Face phishing model. Returns (label, confidence).
+    Raises Exception if it fails.
     """
-    from urllib.parse import urlparse
+    payload = {"inputs": url}
+    resp = requests.post(HF_API_URL, headers=headers, json=payload, timeout=15)
+    resp.raise_for_status()
+    prediction_data = resp.json()
 
-    # Extract domain from the normalized URL
-    parsed = urlparse(normalized_url)
+    if (isinstance(prediction_data, list)
+        and len(prediction_data) > 0
+        and isinstance(prediction_data[0], list)):
+        predictions = prediction_data[0]
+    else:
+        predictions = prediction_data
+
+    best = max(predictions, key=lambda x: x["score"])
+    return best["label"], best["score"]
+
+def whois_lookup(url):
+    """
+    Fetch WHOIS data for the domain in the normalized URL
+    via WhoisXML API. Returns JSON or {"error": "..."} on fail.
+    """
+    parsed = urlparse(url)
     domain = parsed.netloc
-
-    # If 'www.' is at the start, strip it out for the WHOIS query
     if domain.startswith("www."):
         domain = domain[4:]
 
-    whois_url = (
+    api_url = (
         "https://www.whoisxmlapi.com/whoisserver/WhoisService"
         f"?apiKey={WHOIS_API_KEY}"
         f"&domainName={domain}"
-        f"&outputFormat=json"
+        "&outputFormat=json"
     )
-
     try:
-        resp = requests.get(whois_url, timeout=10)
-        resp.raise_for_status()
-        data = resp.json()
-        return data
+        r = requests.get(api_url, timeout=10)
+        r.raise_for_status()
+        return r.json()
     except Exception as e:
-        return {"error": f"WHOIS lookup failed: {str(e)}"}
+        return {"error": f"Whois lookup failed: {str(e)}"}
+
+def domain_age_is_suspicious(whois_data, max_days=30):
+    """
+    Return True if domain is younger than max_days, else False.
+    If missing or invalid data, returns False by default.
+    """
+    record = whois_data.get("WhoisRecord")
+    if not record:
+        # Could treat no data as suspicious, if you prefer
+        return False
+
+    created_str = record.get("createdDate")
+    if not created_str:
+        return False
+    try:
+        created_dt = datetime.datetime.strptime(created_str, "%Y-%m-%dT%H:%M:%SZ")
+        age_days = (datetime.datetime.utcnow() - created_dt).days
+        return age_days < max_days
+    except:
+        return False
 
 # -------------------------------
 # Flask Routes
 # -------------------------------
-
 @app.route('/', methods=['GET'])
 def home():
-    return "✅ PhishSpotter API is live!"
+    return "✅ PhishSpotter with WHOIS Integration is live!"
 
 @app.route('/test', methods=['GET'])
 def test_page():
-    # A simple HTML page for manual testing.
+    """
+    Simple route for manual testing in the browser:
+    http://localhost:5000/test
+    """
     return """
 <!DOCTYPE html>
 <html>
@@ -193,13 +219,16 @@ def test_page():
 
 @app.route('/predict', methods=['POST'])
 def predict():
+    """
+    Main route: GSB -> HF -> WHOIS logic
+    """
     data = request.json
     if not data or 'url' not in data:
         return jsonify({"error": "No URL provided"}), 400
 
     original_url = data['url']
 
-    # Step 0: Normalize & Validate
+    # 1) Normalize or fail
     try:
         normalized_url = normalize_url(original_url)
     except ValueError:
@@ -211,7 +240,7 @@ def predict():
             "safe_browsing": {"error": "Malformed or invalid URL."}
         })
 
-    # Step 1: Google Safe Browsing
+    # 2) Google Safe Browsing
     is_safe, sb_result = safe_browsing_check(normalized_url)
     if not is_safe:
         if sb_result.get("error") == "Invalid URL":
@@ -222,56 +251,46 @@ def predict():
                 "confidence": 0.0,
                 "safe_browsing": sb_result
             })
-        else:
-            return jsonify({
-                "original_url": original_url,
-                "normalized_url": normalized_url,
-                "prediction": "Unsafe (Google Safe Browsing)",
-                "confidence": 1.0,
-                "safe_browsing": sb_result
-            })
-
-    # Step 1.5: WHOIS Lookup
-    whois_data = whois_lookup(normalized_url)
-
-    # Step 2: Hugging Face Inference
-    payload = {"inputs": normalized_url}
-    try:
-        response = requests.post(HF_API_URL, headers=headers, json=payload)
-        response.raise_for_status()
-        prediction_data = response.json()
-
-        if (isinstance(prediction_data, list)
-            and len(prediction_data) > 0
-            and isinstance(prediction_data[0], list)):
-            predictions = prediction_data[0]
-        else:
-            predictions = prediction_data
-
-        best_prediction = max(predictions, key=lambda x: x["score"])
-        label = best_prediction["label"]
-        confidence = best_prediction["score"]
-
-        human_label = label_map.get(label.lower(), label)
-
-        if human_label.lower() == "phishing":
-            human_label = "Uncertain"
-
         return jsonify({
             "original_url": original_url,
             "normalized_url": normalized_url,
-            "prediction": human_label,
-            "confidence": confidence,
-            "safe_browsing": sb_result,
-            # We attach the raw WHOIS JSON or the error message
-            "whois_info": whois_data  
+            "prediction": "Unsafe (Google Safe Browsing)",
+            "confidence": 1.0,
+            "safe_browsing": sb_result
         })
 
+    # 3) Hugging Face Model
+    try:
+        hf_label, hf_conf = call_hf_model(normalized_url)
     except Exception as e:
-        return jsonify({
-            "error": "Failed to get prediction",
-            "details": str(e)
-        }), 500
+        return jsonify({"error": "HF model error", "details": str(e)}), 500
+
+    # Map HF label -> user-friendly
+    mapped_label = label_map.get(hf_label.lower(), hf_label)
+    if mapped_label.lower() == "phishing":
+        final_label = "Uncertain"
+    else:
+        final_label = "Safe"
+
+    # 4) Whois Integration (only if GSB/HF didn't fail)
+    whois_data = whois_lookup(normalized_url)
+    if domain_age_is_suspicious(whois_data, max_days=30):
+        if final_label == "Uncertain":
+            # If HF said "Phishing" => "Uncertain", domain is new => "Phishing"
+            final_label = "Phishing"
+        elif final_label == "Safe":
+            # If HF said "Benign" => "Safe", domain is new => "Uncertain"
+            final_label = "Uncertain"
+
+    # Return final result
+    return jsonify({
+        "original_url": original_url,
+        "normalized_url": normalized_url,
+        "prediction": final_label,
+        "confidence": hf_conf,
+        "safe_browsing": sb_result,
+        "whois_info": whois_data
+    })
 
 # Run the Flask app
 if __name__ == '__main__':

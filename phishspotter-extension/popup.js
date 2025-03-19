@@ -1,7 +1,7 @@
-// We store the server’s response in this variable for the “More Details” page.
+// Store the server’s response for the "More Details" page
 let lastResultData = null;
 
-// Check URL button
+// "Check URL" button
 document.getElementById('checkButton').addEventListener('click', async () => {
   const urlInput = document.getElementById('urlInput').value.trim();
   const resultBox = document.getElementById('resultOutput');
@@ -21,7 +21,7 @@ document.getElementById('checkButton').addEventListener('click', async () => {
     return;
   }
 
-  // Show a “Checking...” message
+  // Show a "Checking..." message
   errorBox.textContent = "⏳ Checking URL...";
   errorBox.classList.remove('hidden');
 
@@ -38,10 +38,10 @@ document.getElementById('checkButton').addEventListener('click', async () => {
     }
 
     const data = await response.json();
-    // Save for “More Details”
+    // Save for "More Details" button
     lastResultData = data;
 
-    // Now determine how to display the result
+    // Decide how to display the result
     if (data.prediction === "Invalid URL") {
       resultLabel.textContent = "⚠️ Invalid URL";
       resultLabel.style.color = "orange";
@@ -55,8 +55,13 @@ document.getElementById('checkButton').addEventListener('click', async () => {
       resultLabel.textContent = "❓ Uncertain ❓";
       resultLabel.style.color = "orange";
       resultConfidence.textContent = (data.confidence * 100).toFixed(2) + "% confidence";
+    } else if (data.prediction === "Unsafe (Google Safe Browsing)") {
+      // In case your server returns this label
+      resultLabel.textContent = "🚫 Unsafe (GSB) 🚫";
+      resultLabel.style.color = "red";
+      resultConfidence.textContent = (data.confidence * 100).toFixed(2) + "% confidence";
     } else {
-      // If not Invalid, Phishing, or Uncertain => treat as “Safe”
+      // If not Invalid/Phishing/Uncertain/Unsafe => treat as "Safe"
       resultLabel.textContent = "✅ Safe";
       resultLabel.style.color = "green";
       resultConfidence.textContent = (data.confidence * 100).toFixed(2) + "% confidence";
@@ -87,7 +92,6 @@ document.getElementById('autofillButton').addEventListener('click', async () => 
 
 // “Learn More” button
 document.getElementById('learnMoreButton').addEventListener('click', () => {
-  // Open your learn_more.html in a new tab
   chrome.tabs.create({
     url: chrome.runtime.getURL('learn_more.html')
   });
@@ -96,7 +100,6 @@ document.getElementById('learnMoreButton').addEventListener('click', () => {
 // “More Details” button
 document.getElementById('detailsButton').addEventListener('click', () => {
   if (lastResultData) {
-    // Pass lastResultData in ?data=... param
     const paramString = encodeURIComponent(JSON.stringify(lastResultData));
     const detailsURL = chrome.runtime.getURL(`result_details.html?data=${paramString}`);
     chrome.tabs.create({ url: detailsURL });
