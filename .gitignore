@@ -4,3 +4,4 @@ __pycache__/
 *.pyc
 .env
 bfg-1.13.2.jar
+replacements.txt
