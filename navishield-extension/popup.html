@@ -3,21 +3,28 @@
 <head>
   <meta charset="UTF-8">
   <title>NaviShield</title>
-  <!-- Reference your shared CSS (popup.css or style.css) -->
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
-  <h2>🛡️ NaviShield</h2>
+  <h2 style="text-align: center; margin-bottom: 0;">
+    <!-- We'll apply an ID so we can do hover scaling in CSS -->
+    <img src="navi.png" alt="Navi Mascot" id="naviMascot" style="width: 64px; height: 64px; border-radius: 50%; margin-bottom: 4px;">
+    <br>
+    🛡️NaviShield🛡️
+  </h2>
+  
+  <p id="naviGreeting" style="text-align:center; font-style:italic; margin-top:0;">
+    Hi, I'm <strong>Navi</strong> – let's see if this link is safe!
+  </p>
 
   <input type="text" id="urlInput" placeholder="Enter a URL like https://example.com">
   <button id="autofillButton">Autofill Current URL</button>
   <button id="checkButton">Check URL</button>
   <button id="learnMoreButton">Learn More</button>
 
-  <!-- The result section only shows Final Label and Suspicion Score -->
   <div id="resultOutput" class="result-box hidden">
-    <p><strong>Result:</strong> <span id="resultLabel"></span></p>
-    <p><strong>Suspicion Score:</strong> <span id="suspicionScore"></span></p>
+    <p><strong>Navi’s Verdict:</strong> <span id="resultLabel"></span></p>
+    <p><strong>Navi’s Suspicion Score:</strong> <span id="suspicionScore"></span></p>
     <button id="detailsButton" class="details-btn">More Details</button>
   </div>
 

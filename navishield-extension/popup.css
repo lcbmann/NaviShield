@@ -84,3 +84,14 @@ pre {
     border-radius: 5px;
     overflow-x: auto;
 }
+
+/* Make the Navi avatar scale up slightly on hover */
+#naviMascot {
+    transition: transform 0.2s ease-in-out; /* smooth scaling */
+    cursor: pointer;
+  }
+  
+  #naviMascot:hover {
+    transform: scale(1.1);
+  }
+  

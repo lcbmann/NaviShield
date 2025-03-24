@@ -1,7 +1,27 @@
 // We'll store the server’s response here for the "More Details" page
 let lastResultData = null;
 
-// Helper function to call /predict API with retries
+/**
+ * Typing effect function
+ * @param {HTMLElement} element - The DOM element to place typed text
+ * @param {string} text - The text to type out
+ * @param {number} speed - Delay in ms between each character
+ */
+function typeText(element, text, speed = 30) {
+  element.textContent = '';
+  let idx = 0;
+  const timer = setInterval(() => {
+    element.textContent += text.charAt(idx);
+    idx++;
+    if (idx >= text.length) {
+      clearInterval(timer);
+    }
+  }, speed);
+}
+
+/**
+ * Helper function to call /predict API with retries
+ */
 async function fetchPredictWithRetry(urlInput, maxRetries = 3, delayMs = 5000) {
   let attempt = 0;
 
@@ -14,36 +34,31 @@ async function fetchPredictWithRetry(urlInput, maxRetries = 3, delayMs = 5000) {
       });
 
       if (!response.ok) {
-        // e.g. 500 or 502 might indicate "model loading" or server error
-        throw new Error(`Server error: ${response.status}`);
+        throw new Error(`Navi encountered a server error: ${response.status}`);
       }
 
-      // If we get a valid response, parse and return it
       return await response.json();
 
     } catch (error) {
-      // If it's a network or server error, we can decide to retry
-      // (Only retry if it's likely the model is just warming up or a transient error)
       attempt++;
       console.log(`Predict attempt #${attempt} failed: ${error.message}`);
 
       if (attempt < maxRetries) {
         const errorBox = document.getElementById('errorOutput');
-        errorBox.textContent = `Model warming up, retrying in ${delayMs / 1000}s... (Attempt ${attempt + 1} of ${maxRetries})`;
+        // We'll do typed text for the "retry" message too, if you like
         errorBox.classList.remove('hidden');
-
-        // Wait a bit before retrying
+        typeText(
+          errorBox,
+          `Navi is still warming up. Retrying in ${delayMs / 1000}s... (Attempt ${attempt + 1} of ${maxRetries})`
+        );
+        
         await new Promise(resolve => setTimeout(resolve, delayMs));
       } else {
-        // After maxRetries, throw the error so we can display a final message
-        throw new Error(`Failed after ${maxRetries} retries: ${error.message}`);
+        throw new Error(`Navi tried ${maxRetries} times, but still failed: ${error.message}. Try again?`);
       }
     }
   }
-
 }
-
-
 
 // "Check URL" button
 document.getElementById('checkButton').addEventListener('click', async () => {
@@ -53,73 +68,67 @@ document.getElementById('checkButton').addEventListener('click', async () => {
   const suspicionScoreEl = document.getElementById('suspicionScore');
   const errorBox = document.getElementById('errorOutput');
 
-  // Clear previous results/messages
+  // Clear old results
   resultBox.classList.add('hidden');
   errorBox.classList.add('hidden');
   errorBox.textContent = '';
   suspicionScoreEl.textContent = '';
   resultLabel.textContent = '';
 
-  // If empty input, show an error
   if (!urlInput) {
-    errorBox.textContent = "⚠️ Please enter a valid URL to check.";
+    errorBox.textContent = "Navi says: Please provide a link for me to check.";
     errorBox.classList.remove('hidden');
     return;
   }
 
-  // Show a "Checking..." message
-  errorBox.textContent = "⏳ Checking URL...";
+  // Instead of direct text: typed text for "Checking..."
   errorBox.classList.remove('hidden');
+  typeText(errorBox, "Navi is checking that site now… Please wait...");
 
   try {
-    // Use our retry helper instead of a direct fetch
     const data = await fetchPredictWithRetry(urlInput, 3, 5000);
-
-    // Save for "More Details" button
     lastResultData = data;
 
-    // If your server includes a "suspicion_score" field, read it; otherwise use "N/A"
     let suspicionVal = "N/A";
     if (typeof data.suspicion_score === "number") {
       suspicionVal = data.suspicion_score;
     }
 
-    // Decide how to display the result label & color
     const finalLabel = data.prediction || "Unknown";
 
     if (finalLabel === "Invalid URL") {
-      resultLabel.textContent = "⚠️ Invalid URL";
+      resultLabel.textContent = "🤔 Navi doesn’t recognize this as a valid URL.";
       resultLabel.style.color = "orange";
     } else if (finalLabel === "Phishing" || finalLabel === "Unsafe (Google Safe Browsing)") {
-      resultLabel.textContent = finalLabel === "Phishing" 
-        ? "🚨 Phishing 🚨"
-        : "🚫 Unsafe (GSB) 🚫";
+      resultLabel.textContent = finalLabel === "Phishing"
+        ? "🚨 Navi sees PHISHING signals here!"
+        : "🚫 Google Safe Browsing flags this site as unsafe!";
       resultLabel.style.color = "red";
     } else if (finalLabel === "Uncertain") {
-      resultLabel.textContent = "❓ Uncertain ❓";
+      resultLabel.textContent = "❓ Navi is suspicious… proceed with caution!";
       resultLabel.style.color = "orange";
-    } else {
-      // If not Invalid/Phishing/Uncertain/Unsafe => treat as "Safe"
-      resultLabel.textContent = "✅ Safe";
+    } else if (finalLabel === "Safe") {
+      resultLabel.textContent = "✅ Navi thinks this site is safe! Enjoy browsing.";
       resultLabel.style.color = "green";
+    } else {
+      resultLabel.textContent = `ℹ️ Navi can’t fully decide. Label: ${finalLabel}`;
+      resultLabel.style.color = "black";
     }
 
-    // Show suspicion score in the UI
+    // Show the suspicion score
     suspicionScoreEl.textContent = suspicionVal;
 
-    // Show the result box, hide the error box
+    // Hide the error box, show the results
     resultBox.classList.remove('hidden');
     errorBox.classList.add('hidden');
 
   } catch (error) {
-    // If all retries fail or another error occurs
-    errorBox.textContent = `❌ Error after retries: ${error.message}`;
+    errorBox.textContent = `Navi had trouble: ${error.message}`;
     errorBox.classList.remove('hidden');
   }
 });
 
-
-// Autofill current tab's URL
+// Autofill
 document.getElementById('autofillButton').addEventListener('click', async () => {
   try {
     let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
