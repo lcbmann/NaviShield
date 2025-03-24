@@ -1,6 +1,50 @@
 // We'll store the server’s response here for the "More Details" page
 let lastResultData = null;
 
+// Helper function to call /predict API with retries
+async function fetchPredictWithRetry(urlInput, maxRetries = 3, delayMs = 5000) {
+  let attempt = 0;
+
+  while (attempt < maxRetries) {
+    try {
+      const response = await fetch('https://phishspotter.onrender.com/predict', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: urlInput })
+      });
+
+      if (!response.ok) {
+        // e.g. 500 or 502 might indicate "model loading" or server error
+        throw new Error(`Server error: ${response.status}`);
+      }
+
+      // If we get a valid response, parse and return it
+      return await response.json();
+
+    } catch (error) {
+      // If it's a network or server error, we can decide to retry
+      // (Only retry if it's likely the model is just warming up or a transient error)
+      attempt++;
+      console.log(`Predict attempt #${attempt} failed: ${error.message}`);
+
+      if (attempt < maxRetries) {
+        const errorBox = document.getElementById('errorOutput');
+        errorBox.textContent = `Model warming up, retrying in ${delayMs / 1000}s... (Attempt ${attempt + 1} of ${maxRetries})`;
+        errorBox.classList.remove('hidden');
+
+        // Wait a bit before retrying
+        await new Promise(resolve => setTimeout(resolve, delayMs));
+      } else {
+        // After maxRetries, throw the error so we can display a final message
+        throw new Error(`Failed after ${maxRetries} retries: ${error.message}`);
+      }
+    }
+  }
+
+}
+
+
+
 // "Check URL" button
 document.getElementById('checkButton').addEventListener('click', async () => {
   const urlInput = document.getElementById('urlInput').value.trim();
@@ -28,23 +72,13 @@ document.getElementById('checkButton').addEventListener('click', async () => {
   errorBox.classList.remove('hidden');
 
   try {
-    // Call your Flask endpoint
-    const response = await fetch('https://phishspotter.onrender.com/predict', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url: urlInput })
-    });
+    // Use our retry helper instead of a direct fetch
+    const data = await fetchPredictWithRetry(urlInput, 3, 5000);
 
-    if (!response.ok) {
-      throw new Error(`Server error: ${response.status}`);
-    }
-
-    const data = await response.json();
     // Save for "More Details" button
     lastResultData = data;
 
-    // If your server includes a "suspicion_score" field, read it
-    // Otherwise default to "N/A"
+    // If your server includes a "suspicion_score" field, read it; otherwise use "N/A"
     let suspicionVal = "N/A";
     if (typeof data.suspicion_score === "number") {
       suspicionVal = data.suspicion_score;
@@ -57,9 +91,8 @@ document.getElementById('checkButton').addEventListener('click', async () => {
       resultLabel.textContent = "⚠️ Invalid URL";
       resultLabel.style.color = "orange";
     } else if (finalLabel === "Phishing" || finalLabel === "Unsafe (Google Safe Browsing)") {
-      // If your server also uses "Unsafe (Google Safe Browsing)" as a final label
       resultLabel.textContent = finalLabel === "Phishing" 
-        ? "🚨 Phishing 🚨" 
+        ? "🚨 Phishing 🚨"
         : "🚫 Unsafe (GSB) 🚫";
       resultLabel.style.color = "red";
     } else if (finalLabel === "Uncertain") {
@@ -79,11 +112,12 @@ document.getElementById('checkButton').addEventListener('click', async () => {
     errorBox.classList.add('hidden');
 
   } catch (error) {
-    // If fetch or JSON parsing fails
-    errorBox.textContent = `❌ Error: ${error.message}`;
+    // If all retries fail or another error occurs
+    errorBox.textContent = `❌ Error after retries: ${error.message}`;
     errorBox.classList.remove('hidden');
   }
 });
+
 
 // Autofill current tab's URL
 document.getElementById('autofillButton').addEventListener('click', async () => {
