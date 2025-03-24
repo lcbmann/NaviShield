@@ -21,7 +21,7 @@
   
     // Create the text portion
     const textEl = document.createElement('span');
-    textEl.innerText = `PhishSpotter Alert: Suspicious site detected! (Score: ${suspicionScore})`;
+    textEl.innerText = `NaviShield Alert: Suspicious site detected! (Score: ${suspicionScore})`;
   
     // Create the close button
     const closeBtn = document.createElement('button');

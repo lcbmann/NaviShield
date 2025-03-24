@@ -211,7 +211,7 @@ def map_score_to_label(score):
 
 @app.route('/', methods=['GET'])
 def home():
-    return "✅ PhishSpotter with Suspicion Score is live!"
+    return "✅ NaviShield with Suspicion Score is live!"
 
 @app.route('/test', methods=['GET'])
 def test_page():
@@ -220,10 +220,10 @@ def test_page():
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>PhishSpotter v2</title>
+  <title>NaviShield v2</title>
 </head>
 <body>
-  <h1>🔒 PhishSpotter (Phishing Detector)</h1>
+  <h1>🔒 NaviShield (Phishing Detector)</h1>
   <p>Enter a URL to check if it's benign or phishing:</p>
   <input type="text" id="urlInput" size="50" placeholder="https://example.com" />
   <button onclick="submitUrl()">Check URL</button>
