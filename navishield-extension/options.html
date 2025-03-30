@@ -6,12 +6,42 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>NaviShield Options</h1>
-  <label>
-    <input type="checkbox" id="autoCheckCheckbox" />
-    Enable Automatic Checks on Each Visited Site
-  </label>
-  <p id="status"></p>
+  <div class="container">
+    <h1 style="margin-top: 0;">NaviShield Options</h1>
+
+    <p>
+      <strong>Quick Tip:</strong> To see NaviShield’s color-coded icon on every site,
+      pin the extension in Chrome 
+      <em>(Click the puzzle piece, then the pin next to “NaviShield”)</em>.
+    </p>
+
+    <!-- Automatic Checks Section -->
+    <div class="option-section">
+      <div class="option-title">Automatic Checks</div>
+      <label>
+        <input type="checkbox" id="autoCheckCheckbox" />
+        <span>Enable Automatic Checks for All Sites</span>
+      </label>
+      <div class="warning">
+        <strong>Note:</strong> Frequent checks = higher API usage. 
+        Enable only for testing or short periods.
+      </div>
+    </div>
+
+    <!-- Banner Option Section -->
+    <div class="option-section">
+      <div class="option-title">Suspicious Banner</div>
+      <label>
+        <input type="checkbox" id="bannerCheckbox" disabled />
+        <span>Show a Red Banner if a Site is Suspicious</span>
+      </label>
+      <p style="margin: 0; font-size: 0.9em;">
+        (Requires Automatic Checks)
+      </p>
+    </div>
+
+    <p id="status"></p>
+  </div>
 
   <script src="options.js"></script>
 </body>

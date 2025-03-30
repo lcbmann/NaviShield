@@ -39,8 +39,7 @@
 
   // Create an optional avatar on the left (like a small Navi icon)
   const avatarEl = document.createElement('img');
-  avatarEl.src = 'https://via.placeholder.com/32/FFFFFF/000000?text=N'; 
-    // Replace with your own 32x32 icon or robot image
+  avatarEl.src = chrome.runtime.getURL('icon128.png');
   avatarEl.alt = 'Navi Avatar';
   avatarEl.style.marginRight = '8px';
   avatarEl.style.borderRadius = '50%'; // circle
@@ -50,7 +49,7 @@
   // Text portion (friendly message)
   // You can tweak the language to be more/less casual
   const textEl = document.createElement('span');
-  textEl.innerText = `Navi says: “Heads up! This site might be risky. (Score: ${suspicionScore})”`;
+  textEl.innerText = `Navi says: “Heads up! This site might be risky... suspicion score is ${suspicionScore}!”`;
 
   // Put the avatar and text together
   const leftSection = document.createElement('div');

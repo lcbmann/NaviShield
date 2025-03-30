@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "NaviShieldTest",
-  "version": "1.0",
-  "description": "Quickly check if a URL is malicious or safe using AI-based detection and Google Safe Browsing.",
+  "name": "NaviShield",
+  "version": "1.1",
+  "description": "Quickly check if a URL is malicious or safe using AI-based detection, WHOIS API, and Google Safe Browsing.",
   "permissions": [
     "activeTab",
     "tabs",

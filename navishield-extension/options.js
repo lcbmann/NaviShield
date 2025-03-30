@@ -1,9 +1,13 @@
 // options.js
 
-// Save the user’s preference to chrome.storage
+/**
+ * Save user’s preferences (autoCheckEnabled, bannerEnabled) to chrome.storage.sync.
+ */
 function saveOptions() {
   const autoCheckEnabled = document.getElementById('autoCheckCheckbox').checked;
-  chrome.storage.sync.set({ autoCheckEnabled }, () => {
+  const bannerEnabled = document.getElementById('bannerCheckbox').checked;
+  
+  chrome.storage.sync.set({ autoCheckEnabled, bannerEnabled }, () => {
     const statusEl = document.getElementById('status');
     statusEl.textContent = 'Options saved.';
     setTimeout(() => {
@@ -12,15 +16,53 @@ function saveOptions() {
   });
 }
 
-// Restore the user’s saved preference
+/**
+ * Restore existing preferences from chrome.storage.sync
+ */
 function restoreOptions() {
-  chrome.storage.sync.get({ autoCheckEnabled: false }, (items) => {
-    document.getElementById('autoCheckCheckbox').checked = items.autoCheckEnabled;
-  });
+  chrome.storage.sync.get(
+    { autoCheckEnabled: false, bannerEnabled: true },
+    (items) => {
+      const autoCheckEl = document.getElementById('autoCheckCheckbox');
+      const bannerEl = document.getElementById('bannerCheckbox');
+      
+      autoCheckEl.checked = items.autoCheckEnabled;
+      bannerEl.checked = items.bannerEnabled;
+
+      // Ensure the banner checkbox is enabled/disabled correctly on load
+      syncBannerCheckbox();
+    }
+  );
 }
 
-// Event listeners
+/**
+ * Enable or disable the banner checkbox based on the autoCheck setting.
+ */
+function syncBannerCheckbox() {
+  const autoCheckEl = document.getElementById('autoCheckCheckbox');
+  const bannerEl = document.getElementById('bannerCheckbox');
+
+  if (!autoCheckEl.checked) {
+    bannerEl.disabled = true;
+    bannerEl.checked = false;
+  } else {
+    bannerEl.disabled = false;
+  }
+}
+
+/**
+ * Main event listeners.
+ */
 document.addEventListener('DOMContentLoaded', () => {
   restoreOptions();
-  document.getElementById('autoCheckCheckbox').addEventListener('change', saveOptions);
+
+  const autoCheckEl = document.getElementById('autoCheckCheckbox');
+  const bannerEl = document.getElementById('bannerCheckbox');
+
+  autoCheckEl.addEventListener('change', () => {
+    syncBannerCheckbox();
+    saveOptions();
+  });
+
+  bannerEl.addEventListener('change', saveOptions);
 });

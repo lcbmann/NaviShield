@@ -1,3 +1,6 @@
+/* style.css */
+
+/* Base Page Setup */
 body {
   margin: 0;
   padding: 0;
@@ -23,13 +26,19 @@ p, li {
   margin-bottom: 1em;
 }
 
-/* Optional styling for boxes, if needed for these pages */
+/* Boxes (used in result_details.html, learn_more.html, etc.) */
 .result-box, .error-box {
   padding: 12px;
   margin-top: 15px;
   border-radius: 5px;
   border: 1px solid #ccc;
   background-color: #f0f0f0;
+}
+.error-box {
+  background-color: #ffe5e5;
+  border-color: #ff6b6b;
+  color: red;
+  font-weight: bold;
 }
 .explanation {
   margin-top: 20px;
@@ -38,9 +47,143 @@ p, li {
   border: 1px solid #b3d4fc;
   border-radius: 5px;
 }
+
+/* Make sure <pre> can wrap very long text/URLs */
 pre {
   background: #eee;
   padding: 10px;
   border-radius: 5px;
+  white-space: pre-wrap;     
+  word-wrap: break-word;     
+  overflow-wrap: break-word; 
+  word-break: break-all;     
+  max-width: 100%;
   overflow-x: auto;
+}
+
+/* Utility */
+.hidden {
+  display: none;
+}
+
+/* ======================
+   Inputs & Buttons
+   ====================== */
+
+/* Treat text inputs and buttons with full width. */
+input[type="text"],
+button {
+  padding: 10px;
+  margin-top: 10px;
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+/* If you have other input types (e.g., password, url), add them above similarly. */
+
+/* For checkboxes, override the full-width style. */
+input[type="checkbox"] {
+  width: auto;            /* Don’t span entire container */
+  margin-top: 0;          /* Remove the extra top margin */
+  margin-right: 6px;      /* A small gap before label text */
+  box-sizing: border-box;
+  border-radius: 0;       /* Checkboxes usually are square */
+  border: none;
+}
+
+/* Buttons */
+button {
+  background-color: #007BFF;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+}
+button:hover {
+  background-color: #0056b3;
+}
+
+/* Additional "More Details" button styling */
+.details-btn {
+  margin-top: 10px;
+  padding: 5px 10px;
+  background-color: #007BFF;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.details-btn:hover {
+  background-color: #0056b3;
+}
+
+/* ======================
+   Options Page Sections
+   ====================== */
+.option-section {
+  background: #f8f8f8;
+  border: 1px solid #ddd;
+  border-radius: 4px; /* slightly smaller radius */
+  padding: 10px;      /* tighten up the padding */
+  margin-bottom: 12px;/* less space below each section */
+}
+
+.option-title {
+  font-weight: bold;
+  margin-bottom: 6px;
+}
+
+.warning {
+  background: #fff3cd;
+  border: 1px solid #ffeeba;
+  border-radius: 4px;
+  padding: 8px;
+  color: #856404;
+  margin: 10px 0;
+}
+
+#status {
+  margin-top: 10px;
+  font-style: italic;
+  color: green;
+}
+
+/* ======================
+   Images, Avatars
+   ====================== */
+#naviMascot {
+  transition: transform 0.2s ease-in-out;
+  cursor: pointer;
+}
+#naviMascot:hover {
+  transform: scale(1.1);
+}
+
+/* ======================
+   Labels & Spans
+   ====================== */
+label {
+  display: flex;
+  align-items: center;
+  margin: 6px 0;
+  gap: 0.4em; /* small gap between checkbox and text */
+}
+
+/* If you want the text to wrap next line if it's too long, keep flex: 1. 
+   Otherwise remove flex: 1 for a smaller text block. */
+label span {
+  flex: 1; 
+}
+
+/* Force long URLs to wrap inside .result-box spans */
+.result-box span#originalUrl,
+.result-box span#normalizedUrl {
+  display: inline-block;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-all;
+  max-width: 100%;
 }

@@ -3,24 +3,31 @@
 <head>
   <meta charset="UTF-8">
   <title>NaviShield</title>
+  <!-- Include your popup.css, which handles layout, button styling, etc. -->
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
   <h2 style="text-align: center; margin-bottom: 0;">
-    <!-- We'll apply an ID so we can do hover scaling in CSS -->
+    <!-- Default to navi.png as the idle/initial image -->
     <img src="navi.png" alt="Navi Mascot" id="naviMascot" style="width: 64px; height: 64px; border-radius: 50%; margin-bottom: 4px;">
     <br>
     🛡️NaviShield🛡️
   </h2>
-  
+
   <p id="naviGreeting" style="text-align:center; font-style:italic; margin-top:0;">
     Hi, I'm <strong>Navi</strong> – let's see if this link is safe!
   </p>
 
+  <!-- URL Input & Main Buttons -->
   <input type="text" id="urlInput" placeholder="Enter a URL like https://example.com">
   <button id="autofillButton">Autofill Current URL</button>
   <button id="checkButton">Check URL</button>
-  <button id="learnMoreButton">Learn More</button>
+
+  <!-- Container for smaller secondary buttons (centered side-by-side) -->
+  <div class="small-btn-row">
+    <button id="learnMoreButton" class="small-btn">Learn More</button>
+    <button id="optionsButton" class="small-btn">Options</button>
+  </div>
 
   <div id="resultOutput" class="result-box hidden">
     <p><strong>Navi’s Verdict:</strong> <span id="resultLabel"></span></p>
@@ -30,6 +37,7 @@
 
   <div id="errorOutput" class="error-box hidden"></div>
 
+  <!-- Your main popup logic -->
   <script src="popup.js"></script>
 </body>
 </html>
