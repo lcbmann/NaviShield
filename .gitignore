@@ -5,3 +5,5 @@ __pycache__/
 .env
 bfg-1.13.2.jar
 replacements.txt
+phishspotter-extension.pem
+data/urldata.csv
