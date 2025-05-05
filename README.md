@@ -1,10 +1,10 @@
 
 
-# 🔐 **PhishSpotter: URL Risk Assessment Tool**
+# 🔐 **NaviShield: URL Risk Assessment Tool**
 
-PhishSpotter is a phishing detection system that evaluates URLs using **machine learning** and **Google Safe Browsing**. It combines a **BERT-based transformer model** trained on real phishing data with Google’s security database, providing a **layered approach** to identifying threats. The tool is available via a **web API** and **browser extension**.
+NaviShield is a phishing detection system that evaluates URLs using **machine learning** and **Google Safe Browsing**. It combines a **BERT-based transformer model** trained on real phishing data with Google’s security database, providing a **layered approach** to identifying threats. The tool is available via a **web API** and **browser extension**.
 
-> ⚠ **Note:** PhishSpotter focuses solely on URL classification (e.g., phishing, benign). Features like **full webpage scanning** and **email analysis** are planned for future updates.
+> ⚠ **Note:** NaviShield focuses solely on URL classification (e.g., phishing, benign). Features like **full webpage scanning** and **email analysis** are planned for future updates.
 
 ---
 
@@ -41,7 +41,7 @@ PhishSpotter is a phishing detection system that evaluates URLs using **machine 
 ## 📁 **Project Structure**
 
 ```
-PhishSpotter/
+NaviShield/
 ├── app.py                     # Flask backend (Safe Browsing & AI model logic)
 ├── phishspotter-extension/    # Chrome Extension frontend
 ├── requirements.txt           # Backend dependencies
@@ -90,12 +90,12 @@ Contributions are welcome! To contribute:
 ---
 
 ## 📜 **License**
-PhishSpotter is licensed under the **MIT License** – free to use, modify, and distribute.
+NaviShield is licensed under the **MIT License** – free to use, modify, and distribute.
 
 ---
 
 ## ⚠ **Disclaimer**
-PhishSpotter assists in phishing detection but **cannot guarantee 100% accuracy**. Users should exercise caution and verify URLs independently when in doubt.
+NaviShield assists in phishing detection but **cannot guarantee 100% accuracy**. Users should exercise caution and verify URLs independently when in doubt.
 
 ---
 

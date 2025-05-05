@@ -6,6 +6,7 @@ body {
 
 h2 {
     text-align: center;
+    margin-top: 20px;
 }
 
 /* Inputs & Buttons */
@@ -36,10 +37,8 @@ button:hover {
     border: 1px solid;
 }
 .result-box {
-    background-color: #f9f9f9;
-    border-color: #ccc;
-    padding: 10px;
     background-color: #f0f0f0;
+    border-color: #ccc;
     border-radius: 8px;
     margin-top: 10px;
 }
@@ -72,11 +71,6 @@ p {
     background-color: #0056b3;
 }
 
-/* Headings */
-h2 {
-    margin-top: 20px;
-}
-
 /* Preformatted text blocks */
 pre {
     background: #eee;
@@ -84,3 +78,44 @@ pre {
     border-radius: 5px;
     overflow-x: auto;
 }
+
+/* Navi avatar scaling */
+#naviMascot {
+    transition: transform 0.2s ease-in-out;
+    cursor: pointer;
+}
+#naviMascot:hover {
+    transform: scale(1.1);
+}
+
+/* Small Buttons */
+.small-btn {
+    width: auto;          /* Don’t stretch across full width */
+    margin-top: 0;        /* No extra vertical gap in the row */
+    padding: 6px 12px;    /* Slightly smaller padding */
+    font-size: 0.875rem;  /* ~14px if default is 16px */
+}
+
+/* Row for the small buttons */
+.small-btn-row {
+    display: flex;
+    justify-content: center;  /* center them horizontally */
+    gap: 8px;                 /* small space between buttons */
+    margin-top: 10px;         /* a bit of space above the row */
+}
+
+/* Animation keyframes for a gentle pulse */
+@keyframes naviPulse {
+    0%, 100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.2);
+    }
+  }
+  
+  /* Class to apply the pulsing animation */
+  .mascot-typing {
+    animation: naviPulse 1.5s ease-in-out infinite;
+  }
+  
